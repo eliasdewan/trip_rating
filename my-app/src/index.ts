@@ -10,8 +10,7 @@ const app = new Hono()
 
 const { origin, destination, passengerRating, pay, pickupDistance, pickupTimeEstimate } = extractData();
 console.log(origin, destination, passengerRating, pay, pickupDistance, pickupTimeEstimate);
-
-
+ 
 app.get('/', (c) => {
   return c.text('Hello Uber!')
 })
@@ -34,24 +33,26 @@ app.post('/', async (c) => {
 
     //response = c.json({ data })
     calculateScore(data, passengerRating, pay, pickupDistance, pickupTimeEstimate);
-    //console.log();
-    return c.json({ data })
+    return c.json({ data });
 
   } catch (error) {
-    console.error('Error fetching Google estimate:', error)
-    return c.json({ error: 'Failed to fetch Google estimate' })
+    console.error('Error fetching Google estimate:', error);
+    return c.json({ error: 'Failed to fetch Google estimate' });
   }
 
 })
 
 // 🍉 old style
 app.post('/static', async (c) => {
-  const response =
+  console.log("Youre trying the approximate method 📕")
+  try {
     // Historiacal search - non dynamic
-    await fetchGoogleMapsData(origin, destination)
-      .then(data => console.log('Google Maps API response:', data))
-      .catch(error => console.error('Error:', error));
-  return c.json([response]);
+    const data = await fetchGoogleMapsData(origin, destination);
+    return c.json({ data , some: "here"});
+  } catch (error) {
+    console.error('Error fetching Google estimate:', error);
+    return c.json({ error: 'Failed to fetch Google estimate' });
+  }
 })
 
 // Get string for HTTP request

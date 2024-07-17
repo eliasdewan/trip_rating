@@ -24,7 +24,6 @@ const jsonData = [
   { "text": "4.64" }, // 22
   { "text": "£31.57 + est. holiday pay of £3.04" }, //23
   { "text": "2 mins (0.1 mi) away" }, //24
-  { "text": "2 mins (0.1 mi) away" }, //24
   { "text": "UB2, Southall" },    // 25
   { "text": "19.7 mi trip" },     // 26
   { "text": "E14, London" },      // 27

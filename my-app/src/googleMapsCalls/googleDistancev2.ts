@@ -1,10 +1,10 @@
-export function getGoogleEstimatev2() {
+export function getGoogleEstimatev2(origin: string, destination: string) {
   const url = "https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix"
   const data = {
     "origins": [
       {
         "waypoint": {
-          "address": "UB2 southall"
+          "address": origin
         },
         "routeModifiers": { "avoid_ferries": true }
       }
@@ -12,7 +12,7 @@ export function getGoogleEstimatev2() {
     "destinations": [
       {
         "waypoint": {
-          "address": "E14 London"
+          "address": destination
         }
       }
     ],

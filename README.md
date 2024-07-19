@@ -4,3 +4,5 @@
 ## Using Typescript all the way
 
 Using google maps modern routing for computing data
+
+# Main Router -> api -> controller -> service -> calling other helpers

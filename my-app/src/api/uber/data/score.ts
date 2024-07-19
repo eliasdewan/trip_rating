@@ -22,10 +22,8 @@ export function calculateScore(
   const desiredPayPerMile = 2;
 
   console.log(data, "score")
-
   data = data[0]
 
-  console.log(typeof (data));
   console.log(data.distanceMeters);
   let miles = (data.distanceMeters / 1000) / miles_to_km + pickupDistance
   console.log(miles.toFixed(2), "miles")
@@ -44,8 +42,20 @@ export function calculateScore(
   console.log(perMileRating.toFixed(2), "ppmlr")
   // Per Hour rating
   let perHourRating = pricePerHour * (100 / desiredHourlyRate)
-  console.log(perHourRating.toFixed(2), "phrr");
+  console.log(perHourRating.toFixed(2), "phr");
 
 
+  let resultData = {
+    miles,
+    time,
+    timeMinutes,
+    pricePerMile,
+    pricePerHour,
+    perMileRating,
+    perHourRating,
+    pay,
+    passengerRating
+  }
 
+  return resultData
 }

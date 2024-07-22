@@ -12,8 +12,8 @@ const app = new Hono()
 // console.log(origin, destination, passengerRating, pay, pickupDistance, pickupTimeEstimate);
 
 
-app.get('/',  (c) => {
-return c.text('Do you know what you are doing?')
+app.post('/', (c) => {
+  return c.text('Do you know what you are doing?')
 }).get('/', (c) => {
   return c.text('Hello Uber!')
 })
@@ -35,17 +35,17 @@ app.post('/testQuery', async (c) => {
 
   } catch (error) {
     console.error('Error fetching Google estimate:', error);
-    return c.json({ error: 'Failed to fetch Google estimate' });
+    return c.json({ error: 'Failed to fetch Google estimate from test query' }); // TODO; Change this to use dynamic 
   }
 
 })
 
 app.post('/score', async (c) => {
-
+  let origin, destination, passengerRating, pay, pickupDistance, pickupTimeEstimate;
   try {
     // 1. Get uber data from request and extract data 
-    const uberJsonData = await c.req.json()
-    let { origin, destination, passengerRating, pay, pickupDistance, pickupTimeEstimate } = extractData(uberJsonData);
+    const uberJsonData = await c.req.json();
+    ({ origin, destination, passengerRating, pay, pickupDistance, pickupTimeEstimate } = extractData(uberJsonData));
     // 2. Get data from google maps api
     let googleJsonData = await getGoogleEstimatev2(origin, destination);
     // 3. Calculate the result for desired output
@@ -54,7 +54,7 @@ app.post('/score', async (c) => {
 
   } catch (error) {
     console.error('Error fetching Google estimate:', error);
-    return c.json({ error: 'Failed to fetch Google estimate' });
+    return c.json({ error: 'Failed to fetch Google estimate from google v2', usedLocation: [origin, destination] }); // TODO Change to this dynamic routing string
   }
 
 })
@@ -83,7 +83,7 @@ app.post('/static', async (c) => {
     return c.json({ data, some: "here" });
   } catch (error) {
     console.error('Error fetching Google estimate:', error);
-    return c.json({ error: 'Failed to fetch Google estimate' });
+    return c.json({ error: 'Failed to fetch Google estimate from estimate' }); // TODO: make this routing dynamic to match the curret route
   }
 })
 

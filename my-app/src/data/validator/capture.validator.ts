@@ -16,19 +16,20 @@ const containsAway = arrayItemSchema.refine(
   }
 ); // this is the way for arrays
 
-export const awayResult = containsAway.safeParse(failedRequest)
+export const awayResult = () => containsAway.safeParse(failedRequest)
+const testResult = awayResult();
 
-if (!awayResult.success) {
-  console.log(awayResult.error);
+if (!testResult.success) {
+  console.log(testResult.error);
 } else {
-  console.log(awayResult.data);
+  console.log(testResult.data);
 }
 
 
 /** A json schema if ever required
 const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 type Literal = z.infer<typeof literalSchema>;
-type Json = Literal | { [key: string]: Json } | Json[];
+type Json = Literal | { [key: string]: Json } | Json[]; 
 const jsonSchema: z.ZodType<Json> = z.lazy(() =>
   z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema)])
 );

@@ -1,8 +1,11 @@
 name = "my-app"
 compatibility_date = "2024-07-17"
+compatibility_flags = ["nodejs_compat"]
 
-# [vars]
-# MY_VAR = "my-variable"
+[vars]
+MY_VAR = "my-variable"
+NAME = "uber-calculate"
+# GOOGLE_MAPS_API_KEY = "AIzaSyDso8ZpnTpAeWsnveJaKyA57nt2Eyqgj5I"
 
 # [[kv_namespaces]]
 # binding = "MY_KV_NAMESPACE"

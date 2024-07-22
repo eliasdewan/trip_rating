@@ -21,7 +21,18 @@ export function calculateScore(
   const desiredHourlyRate = 40;
   const desiredPayPerMile = 2;
 
-  console.log(data, "score")
+  console.log(data, "score") // FIXME:  you can have here address not found from google , dont proceed if that happens
+/**
+ * [
+  {
+    originIndex: 0,
+    destinationIndex: 0,
+    status: { code: 5, message: 'Address not found.' }
+  }
+]
+ */
+
+
   data = data[0]
 
   console.log(data.distanceMeters);

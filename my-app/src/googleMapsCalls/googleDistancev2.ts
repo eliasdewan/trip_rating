@@ -25,7 +25,7 @@ export function getGoogleEstimatev2(origin: string, destination: string) {
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
-      "X-Goog-Api-Key": "AIzaSyDso8ZpnTpAeWsnveJaKyA57nt2Eyqgj5I",
+      "X-Goog-Api-Key": "AIzaSyDso8ZpnTpAeWsnveJaKyA57nt2Eyqgj5I", // FIXME:  change this to use the maybe env or even context when you can https://hono.dev/docs/api/hono#fetch
       "X-Goog-FieldMask": "originIndex,destinationIndex,duration,distanceMeters,status,condition"
     },
     body: JSON.stringify(data)

@@ -4,6 +4,7 @@ import { extractData } from './data/uber.service'
 import { dummyGoogleJsonData } from '../../data/googleResultSample'
 import { fetchGoogleMapsData } from '../../googleMapsCalls/googleDistance'
 import { getGoogleEstimatev2 } from '../../googleMapsCalls/googleDistancev2'
+import { env } from 'hono/adapter'
 
 
 const app = new Hono()
@@ -25,12 +26,12 @@ app.post('/testQuery', async (c) => {
   try {
     // 1. Get uber data from request and extract data 
     const uberJsonData = await c.req.json()
-    let { origin, destination, passengerRating, pay, pickupDistance, pickupTimeEstimate } = extractData(uberJsonData);
+    let { origin, destination, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate } = extractData(uberJsonData);
     console.log(origin, destination, passengerRating, pay, pickupDistance, pickupTimeEstimate)
     // 2. Get data from google maps api
     //const data = await getGoogleEstimatev2()
     // 3. Calculate the result for desired output
-    const ratingResult = calculateScore(dummyGoogleJsonData, passengerRating, pay, pickupDistance, pickupTimeEstimate);
+    const ratingResult = calculateScore(dummyGoogleJsonData, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate);
     return c.json(ratingResult);
 
   } catch (error) {
@@ -41,20 +42,21 @@ app.post('/testQuery', async (c) => {
 })
 
 app.post('/score', async (c) => {
-  let origin, destination, passengerRating, pay, pickupDistance, pickupTimeEstimate;
+  let origin, destination, passengerRating, pay,uberDistance, pickupDistance, pickupTimeEstimate;
+  const { GOOGLE_MAPS_API_KEY } = env<{ GOOGLE_MAPS_API_KEY: string }>(c)
   try {
     // 1. Get uber data from request and extract data 
     const uberJsonData = await c.req.json();
-    ({ origin, destination, passengerRating, pay, pickupDistance, pickupTimeEstimate } = extractData(uberJsonData));
+    ({ origin, destination, passengerRating, pay,uberDistance, pickupDistance, pickupTimeEstimate } = extractData(uberJsonData));
     // 2. Get data from google maps api
-    let googleJsonData = await getGoogleEstimatev2(origin, destination);
+    let googleJsonData = await getGoogleEstimatev2(origin, destination, GOOGLE_MAPS_API_KEY); // TODO: INPUT KEY HERE
     // 3. Calculate the result for desired output
-    const ratingResult = calculateScore(googleJsonData, passengerRating, pay, pickupDistance, pickupTimeEstimate);
-    return c.json(ratingResult);
+    const ratingResult = calculateScore(googleJsonData, passengerRating, pay,uberDistance, pickupDistance, pickupTimeEstimate);
+    return c.json({ ...ratingResult, scoreParameters: { googleJsonData, passengerRating, pay,uberDistance, pickupDistance, pickupTimeEstimate }, googleApiParameters: { origin, destination, key: "secretKey" } });
 
   } catch (error) {
-    console.error('Error fetching Google estimate:', error);
-    return c.json({ error: 'Failed to fetch Google estimate from google v2', usedLocation: [origin, destination] }); // TODO Change to this dynamic routing string
+    console.error('Error running score api:', error);
+    return c.json({ error: 'Failed to fetch Google estimate from google v2 score api', usedLocation: [origin, destination] }); // TODO Change to this dynamic routing string
   }
 
 })

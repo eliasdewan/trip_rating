@@ -1,4 +1,4 @@
-## Uber rating backen
+## Uber rating backend
 ### Forn Cloudfare worker 
 # Using Hono but doent really have much to do with that
 ## Using Typescript all the way

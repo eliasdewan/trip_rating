@@ -1,4 +1,7 @@
-export function getGoogleEstimatev2(origin: string, destination: string) {
+import { logger } from "hono/logger";
+
+export function getGoogleEstimatev2(origin: string, destination: string, apiKey: string) {
+
   const url = "https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix"
   const data = {
     "origins": [
@@ -25,22 +28,22 @@ export function getGoogleEstimatev2(origin: string, destination: string) {
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
-      "X-Goog-Api-Key": "AIzaSyDso8ZpnTpAeWsnveJaKyA57nt2Eyqgj5I", // FIXME:  change this to use the maybe env or even context when you can https://hono.dev/docs/api/hono#fetch
+      "X-Goog-Api-Key": apiKey,
       "X-Goog-FieldMask": "originIndex,destinationIndex,duration,distanceMeters,status,condition"
     },
     body: JSON.stringify(data)
   })
     .then(response => {
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error(`Network response was not ok from google:', ${response.status}`);
       }
       return response.json();
     })
     .then(data => {
-      return data;
+      return data; // The actual map data as ../data
     })
     .catch(error => {
-      console.error('Error:', error);
+      console.error('Error from googleDistranceMatrixV2:', error);
       throw error; // Re-throw the error to handle it further if needed
     });
 }

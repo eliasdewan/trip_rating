@@ -46,7 +46,7 @@ export default function extractCleanData(jsonData: any) {
   //console.log(textList[tripLenthIndex])
   status.tripLenthPass = tripLenthIndex - awayIndex === 2 ? true : false // cheecking the order is right
   status.tripLenthIndex = tripLenthIndex;
-  status.tripLength = dicimalRegex.exec(textList[tripLenthIndex])?.find(Number);
+  status.tripLength = Number(dicimalRegex.exec(textList[tripLenthIndex])?.find(Number));
 
 
   // Pay find finding with string pound sign next to holiday pay[-- £ --]

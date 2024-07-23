@@ -13,6 +13,7 @@ export function extractData(jsonData: any) {
   // current index in this data
   const passengerRating = cleanDataExtracted.customerRating;
   const pay = cleanDataExtracted.pay
+  const uberDistance = cleanDataExtracted.tripLength;
   const pickupDistance = cleanDataExtracted.pickupDistance;
   const pickupTimeEstimate = cleanDataExtracted.pickupTimeEstimate;
 
@@ -20,5 +21,5 @@ export function extractData(jsonData: any) {
 
   console.log({ ...locations, passengerRating, pay, pickupDistance, pickupTimeEstimate });
 
-  return { ...locations, passengerRating, pay, pickupDistance, pickupTimeEstimate }
+  return { ...locations, passengerRating, pay,uberDistance, pickupDistance, pickupTimeEstimate }
 }

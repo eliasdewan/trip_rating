@@ -1,11 +1,12 @@
 import { Context, Hono } from 'hono'
-import uberController from './api/uber/uber.ontroller'
+import uberController from './api/rideSharing/uber.ontroller'
+import boltController from './api/rideSharing/bolt.controller'
 import { logger } from 'hono/logger'
 import { awayResult } from './data/validator/capture.validator'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { env } from 'hono/adapter'
-import responseGoogleApiCall from './api/uber/data/envVar.test'
+import responseGoogleApiCall from './api/rideSharing/data/envVar.test'
 
 
 type Bindings = {
@@ -27,7 +28,8 @@ app.onError((err, c) => {
 })
 
 app.use(logger())
-app.route('/api', uberController)
+app.route('/api', uberController);
+app.route('/api', boltController)
 
 console.log('Hono running');
 
@@ -56,7 +58,7 @@ app.post('/test',
     // ENV
     const { GOOGLE_MAPS_API_KEY } = env<{ GOOGLE_MAPS_API_KEY: string }>(c)
 
-    return c.json( validated )
+    return c.json(validated)
   }
 )
 

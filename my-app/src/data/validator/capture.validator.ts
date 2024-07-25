@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { failedRequest } from "../uberDataSample";
+import { failedRequest } from "../uberTaskerScreenInfo/uberDataSample";
 
 //use paramer in function later
 const searchString = "away"; // Present in uber request as how far awai is the pickup

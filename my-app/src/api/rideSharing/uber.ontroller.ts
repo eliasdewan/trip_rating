@@ -5,6 +5,8 @@ import { dummyGoogleJsonData } from '../../data/googleResultSample'
 import { fetchGoogleMapsData } from '../../googleMapsCalls/googleDistance'
 import { getGoogleEstimatev2 } from '../../googleMapsCalls/googleDistancev2'
 import { env } from 'hono/adapter'
+import multiplePoints from '../../data/uberTaskerScreenInfo/multiplePoints'
+import boltExample from '../../data/boltTaskerScreenInfo/boltExample'
 
 
 const app = new Hono()
@@ -41,18 +43,18 @@ app.post('/testQuery', async (c) => {
 
 })
 
-app.post('/score', async (c) => {
-  let origin, destination, passengerRating, pay,uberDistance, pickupDistance, pickupTimeEstimate;
+app.post('/uberScore', async (c) => {
+  let origin, destination, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate;
   const { GOOGLE_MAPS_API_KEY } = env<{ GOOGLE_MAPS_API_KEY: string }>(c)
   try {
     // 1. Get uber data from request and extract data 
     const uberJsonData = await c.req.json();
-    ({ origin, destination, passengerRating, pay,uberDistance, pickupDistance, pickupTimeEstimate } = extractData(uberJsonData));
+    ({ origin, destination, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate } = extractData(uberJsonData));
     // 2. Get data from google maps api
     let googleJsonData = await getGoogleEstimatev2(origin, destination, GOOGLE_MAPS_API_KEY); // TODO: INPUT KEY HERE
     // 3. Calculate the result for desired output
-    const ratingResult = calculateScore(googleJsonData, passengerRating, pay,uberDistance, pickupDistance, pickupTimeEstimate);
-    return c.json({ ...ratingResult, scoreParameters: { googleJsonData, passengerRating, pay,uberDistance, pickupDistance, pickupTimeEstimate }, googleApiParameters: { origin, destination, key: "secretKey" } });
+    const ratingResult = calculateScore(googleJsonData, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate);
+    return c.json({ ...ratingResult, scoreParameters: { googleJsonData, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate }, googleApiParameters: { origin, destination, key: "secretKey" } });
 
   } catch (error) {
     console.error('Error running score api:', error);
@@ -60,6 +62,8 @@ app.post('/score', async (c) => {
   }
 
 })
+
+
 
 /**
  *  @UberJsonData

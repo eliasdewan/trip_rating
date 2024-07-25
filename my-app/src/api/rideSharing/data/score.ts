@@ -26,12 +26,12 @@ export function calculateScore(
   pickupTimeEstimate: number
 ) {
 
-  const miles_to_km = 1.609344;
+  const miles_to_km: number = 1.609344;
   // Set desired score for 100
   const desiredHourlyRate = 40;
   const desiredPayPerMile = 2;
 
-  console.log(data, "using it in score function")
+  console.log(data, "calculate score using it in score function");
   // FIXME:  you can have here address not found from google , dont proceed if that happens
   /**
    * [
@@ -44,30 +44,32 @@ export function calculateScore(
    */
 
 
-  data = data[0]
-
-  console.log(data.distanceMeters);
-  let miles = (data.distanceMeters / 1000) / miles_to_km + pickupDistance // FIXME: This miles uses location from half post code to half post code (not good for same area travels)
-  console.log(miles.toFixed(2), "miles")
-  let time = Number(data.duration.slice(0, -1)) // remove the s from the last index
+  data = data[0];
+  
+  console.log(data);
+  console.log("calc", (data.distanceMeters / 1000) / miles_to_km + +pickupDistance);
+  
+  let miles = (data.distanceMeters / 1000) / miles_to_km + +pickupDistance; //  This miles uses location from half post code to half post code (not good for same area travels)
+  console.log(miles.toFixed(2), "miles");
+  let time = Number(data.duration.slice(0, -1)); // remove the s from the last index
 
   // TRIP DURATION
-  let timeMinutes = time / 60 + pickupTimeEstimate
+  let timeMinutes = time / 60 + pickupTimeEstimate;
   console.log(timeMinutes.toFixed(2), "minutes");
   // PRICE PER MILE 
-  let pricePerMile = (pay / miles)
-  console.log(pricePerMile.toFixed(2), " per mile")
+  let pricePerMile = (pay / miles);
+  console.log(pricePerMile.toFixed(2), " per mile");
 
   //⌛ PRICE PER HOUR
-  let pricePerHour = (pay / (timeMinutes / 60))
+  let pricePerHour = (pay / (timeMinutes / 60));
   console.log(pricePerHour.toFixed(2), "per hour");
 
   //⭐ Per mile rating
-  let perMileRating = pricePerMile * (100 / desiredPayPerMile)
-  console.log(perMileRating.toFixed(2), "ppmlr")
+  let perMileRating = pricePerMile * (100 / desiredPayPerMile);
+  console.log(perMileRating.toFixed(2), "ppmlr");
 
   //⭐ Per Hour rating
-  let perHourRating = pricePerHour * (100 / desiredHourlyRate)
+  let perHourRating = pricePerHour * (100 / desiredHourlyRate);
   console.log(perHourRating.toFixed(2), "phr");
 
   // Discrepancies - when the uber distance significatly lower than calculated
@@ -90,5 +92,5 @@ export function calculateScore(
     distanceDifference
   }
 
-  return resultData
+  return resultData;
 }

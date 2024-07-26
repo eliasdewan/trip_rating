@@ -1,12 +1,13 @@
-import { Context, Hono } from 'hono'
+import { Hono } from 'hono'
 import uberController from './api/rideSharing/uber.ontroller'
-import boltController from './api/rideSharing/bolt.controller'
+import boltController from './api/rideSharing/bolt/bolt.controller'
 import { logger } from 'hono/logger'
-import { awayResult } from './data/validator/capture.validator'
+import { searchResult } from './data/validator/capture.validator'
 import { zValidator } from '@hono/zod-validator'
-import { z } from 'zod'
+import { object, z } from 'zod'
 import { env } from 'hono/adapter'
-import responseGoogleApiCall from './api/rideSharing/data/envVar.test'
+import { failedRequest } from './data/uberTaskerScreenInfo/uberDataSample'
+import { cache } from 'hono/cache'
 
 
 type Bindings = {
@@ -15,8 +16,65 @@ type Bindings = {
   GOOGLE_MAPS_API_KEY: string;
 }
 
+const app = new Hono<{ Bindings: Bindings }>();
+app.route('/api', uberController);
+app.route('/api', boltController);
 
-const app = new Hono<{ Bindings: Bindings }>()
+console.log('Hono running');
+
+app.get('/var', (c) => {
+  // In development both .toml and .dev.vars are used, .dev.vars is used when duplicate
+  // dev.vars are hidden on development run terminal 
+  const some = env(c);
+  const ENV = c.env
+  return c.json({ "env.(c)": some, "Binding c.env": ENV })
+})
+
+
+app.post('/testContains', async c => {
+  return c.req.json().
+    then(json => {
+      const valid = searchResult(Object.values(json)[0] as string, failedRequest);
+      return c.json({ valid })
+    }).catch(error => {
+      return c.json({ message: "failed", error })
+    })
+})
+
+app.use(cache({
+  cacheName: 'my-app',
+  cacheControl: 'max-age=2', // Set the max-age to 3600 seconds (1 hour)
+  // keyGenerator: async (c) => {
+  //   // Generate a key based on the request body or other parameters
+  //   const body = await c.req.text();
+  //   return `${c.req.url}-${body}`;
+  // },
+  // wait: true
+}))
+
+
+app.post('/test',
+  // Validation middlewere, if not valid sends 404 Bad Request
+  zValidator('json', z.array(z.record(z.string()))),
+  // Automatically doenst chache if there was an error (with status code)
+  
+  async (c) => {
+    // Ensure that `req.valid` correctly reflects the expected type
+    const validated = c.req.valid('json');
+
+    // ENV (assuming `env` function exists and returns the correct type)
+    const { GOOGLE_MAPS_API_KEY } = env<{ GOOGLE_MAPS_API_KEY: string }>(c);
+
+    // Return the validated data
+    console.log('Validated');
+    // c.status(400);
+    return c.json(validated);
+  }
+);
+
+
+//awayResult
+
 
 app.notFound((c) => {
   return c.text('Page not found, but server is working 😁', 404)
@@ -28,45 +86,6 @@ app.onError((err, c) => {
 })
 
 app.use(logger())
-app.route('/api', uberController);
-app.route('/api', boltController)
-
-console.log('Hono running');
-
-addEventListener('fetch', event => {
-  console.log('running event listener');
-  event.respondWith(responseGoogleApiCall(event.request));
-})
-
-app.get('/var', (c) => {
-  // In development both .toml and .dev.vars are used, .dev.vars is used when duplicate
-  // dev.vars are hidden on development run terminal 
-
-
-  const some = env(c);
-  const ENV = c.env
-  return c.json({ "env.(c)": some, "Binding c.env": ENV })
-})
-
-
-app.post('/test',
-  zValidator('json', z.array(z.record(z.string()))),
-  // zValidator('json', z.object({ text: z.string() })),
-  (c) => {
-    const validated = c.req.valid('json')
-
-    // ENV
-    const { GOOGLE_MAPS_API_KEY } = env<{ GOOGLE_MAPS_API_KEY: string }>(c)
-
-    return c.json(validated)
-  }
-)
-
-
-//awayResult
-
-
-
 
 
 export default app

@@ -1,11 +1,9 @@
-//mi trip
-// away
 
 const stringCommaString = "^[^,]+,[^,]+$"
 const integerRegex = /\b\d+\b/
 const dicimalRegex = /\d+\.\d+/
 
-export default function extractCleanData(jsonData: any) {
+export default function uberExtractData(jsonData: any) {
   const textList: string[] = jsonData.map(item => item.text)
 
   // Logging expected results

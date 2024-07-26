@@ -1,7 +1,7 @@
-import extractCleanData from './taskerDataExtract';
+import uberExtractData from "./uberExtractTaskerData.service";
 
 export function extractData(jsonData: any) {
-  const cleanDataExtracted = extractCleanData(jsonData);
+  const cleanDataExtracted = uberExtractData(jsonData);
   console.log(cleanDataExtracted, "extractData");
 
   let locations;

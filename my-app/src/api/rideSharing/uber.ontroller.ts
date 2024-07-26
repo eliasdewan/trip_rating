@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
-import { calculateScore } from './data/score'
-import { extractData } from './data/uber.service'
+import { calculateScore } from './common/score'
+import { extractData } from './uber/uber.service'
 import { dummyGoogleJsonData } from '../../data/googleResultSample'
 import { fetchGoogleMapsData } from '../../googleMapsCalls/googleDistance'
 import { getGoogleEstimatev2 } from '../../googleMapsCalls/googleDistancev2'
@@ -53,7 +53,7 @@ app.post('/uberScore', async (c) => {
     // 2. Get data from google maps api
     let googleJsonData = await getGoogleEstimatev2(origin, destination, GOOGLE_MAPS_API_KEY); // TODO: INPUT KEY HERE
     // 3. Calculate the result for desired output
-    const ratingResult = calculateScore(googleJsonData, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate);
+    const ratingResult = calculateScore(googleJsonData, +passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate);
     return c.json({ ...ratingResult, scoreParameters: { googleJsonData, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate }, googleApiParameters: { origin, destination, key: "secretKey" } });
 
   } catch (error) {
@@ -80,12 +80,6 @@ app.post('/static', async (c) => {
     const distanceDuration = data.rows[0].elements[0];
     const distance = distanceDuration.distance
     const duration = distanceDuration.duration
-
-    // console.log(data.rows[0].elements);
-    console.log(distance);
-    console.log(duration);
-
-    // console.log(data.rows[0].elements.duration.values);
     return c.json({ data, some: "here" });
   } catch (error) {
     console.error('Error fetching Google estimate:', error);

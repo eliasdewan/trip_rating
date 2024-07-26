@@ -29,7 +29,7 @@ export function getGoogleEstimatev2(origin: string, destination: string, apiKey:
     headers: {
       "Content-Type": "application/json",
       "X-Goog-Api-Key": apiKey,
-      "X-Goog-FieldMask": "originIndex,destinationIndex,duration,distanceMeters,status,condition"
+      "X-Goog-FieldMask": "originIndex,destinationIndex,duration,distanceMeters,status,condition,staticDuration,travelAdvisory,localizedValues,fallbackInfo"
     },
     body: JSON.stringify(data)
   })

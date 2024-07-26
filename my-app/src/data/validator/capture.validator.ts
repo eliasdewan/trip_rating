@@ -2,27 +2,25 @@ import { z } from "zod";
 import { failedRequest } from "../uberTaskerScreenInfo/uberDataSample";
 
 //use paramer in function later
-const searchString = "away"; // Present in uber request as how far awai is the pickup
+// const searchString = "away"; // Present in uber request as how far awai is the pickup
 
 const arrayItemSchema = z.array(z.object({
   text: z.string()
 }));
 
-const containsAway = arrayItemSchema.refine(
-  item => item.some(item => item.text.includes(searchString)),
-  {
-    message: `${searchString} not found.`,
-    path: ['uber']
-  }
-); // this is the way for arrays
+const containsIncludesSchema = (searchString: string) => {
+  return arrayItemSchema.refine(
+    array => array.some(item => item.text.includes(searchString)),
+    {
+      message: `${searchString} not found.`,
+      path: ['uber']
+    }
+  )
+};
 
-export const awayResult = () => containsAway.safeParse(failedRequest)
-const testResult = awayResult();
-
-if (!testResult.success) {
-  console.log(testResult.error);
-} else {
-  console.log(testResult.data);
+export const searchResult = (searchString: string, failedRequest: { [key: string]: string }[]) => {
+  const schema = containsIncludesSchema(searchString);
+  return schema.safeParse(failedRequest)
 }
 
 

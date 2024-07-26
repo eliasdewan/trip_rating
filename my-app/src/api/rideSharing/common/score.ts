@@ -1,23 +1,36 @@
-type googleMatrixReturn = [{
-  originIndex?: number,
-  destinationIndex?: number,
+export type googleMatrixReturn = [{
+  originIndex: number,
+  destinationIndex: number,
   status?: object,
-  distanceMeters?: number,
-  duration?: string,
-  condition?: string
+  distanceMeters: number,
+  duration: string,
+  staticDuration?: string,
+  condition?: string,
+  localizedValues?: {
+    distance: {
+      text: string
+    },
+    duration: {
+      text: string
+    },
+    staticDuration: {
+      text: string
+    }
+  }
 }]
 
 export interface CalculatedData {
-  pay: number,
-  miles: number,
-  time: number,
-  timeMinutes: number,
-  pricePerMile: number,
-  pricePerHour: number,
-  perMileRating: number,
-  perHourRating: number,
-  passengerRating: number,
-  distanceDifference: number
+  pay: number;
+  miles: number;
+  time: number;
+  timeMinutes: number;
+  pricePerMile: number;
+  pricePerHour: number;
+  perMileRating: number;
+  perHourRating: number;
+  passengerRating: number;
+  distanceDifference: number;
+  trafficIntensity?: number;
 }
 
 /**
@@ -30,8 +43,8 @@ export interface CalculatedData {
  * @param pickupTimeEstimate 
  * @returns { pay,miles,time,timeMinutes,pricePerMile,pricePerHour,perMileRating,perHourRating,passengerRating,distanceDifference}
  */
-export function calculateScore (
-  data: googleMatrixReturn | any,
+export function calculateScore(
+  data: googleMatrixReturn,
   passengerRating: number,
   pay: number,
   uberDistance: number,
@@ -44,7 +57,7 @@ export function calculateScore (
   const desiredHourlyRate = 40;
   const desiredPayPerMile = 2;
 
-  const calculatedData : Partial<CalculatedData> = {
+  const calculatedData: Partial<CalculatedData> = {
     pay,
     passengerRating
   }
@@ -62,14 +75,13 @@ export function calculateScore (
    */
 
   try {
-    data = data[0];
+    const primaryData = data[0]
+    console.log(primaryData);
+    console.log("calc", (primaryData.distanceMeters / 1000) / miles_to_km + +pickupDistance);
 
-    console.log(data);
-    console.log("calc", (data.distanceMeters / 1000) / miles_to_km + +pickupDistance);
-
-    let miles = (data.distanceMeters / 1000) / miles_to_km + +pickupDistance; //  This miles uses location from half post code to half post code (not good for same area travels)
+    let miles = (primaryData.distanceMeters / 1000) / miles_to_km + +pickupDistance; //  This miles uses location from half post code to half post code (not good for same area travels)
     console.log(miles.toFixed(2), "miles");
-    calculatedData.time = Number(data.duration.slice(0, -1)); // remove the s from the last index
+    calculatedData.time = parseFloat(primaryData.duration.replace("s", "")); // remove the s from the last index
 
     // TRIP DURATION
     calculatedData.timeMinutes = calculatedData.time / 60 + pickupTimeEstimate;
@@ -93,6 +105,13 @@ export function calculateScore (
     // Discrepancies - when the uber distance significatly lower than calculated
     calculatedData.distanceDifference = miles - (uberDistance + pickupDistance);
     console.log(calculatedData.distanceDifference, "more or less than uber");
+
+    // Traffic intensity for static and current time
+    if (primaryData.staticDuration) {
+      const staticDuration = parseFloat(primaryData.staticDuration.replace("s", ""));
+      const actualDuration = parseFloat(primaryData.duration.replace("s", ""));
+      calculatedData.trafficIntensity = parseFloat((actualDuration / staticDuration).toFixed(1))
+    }
 
     return calculatedData as CalculatedData;
   }

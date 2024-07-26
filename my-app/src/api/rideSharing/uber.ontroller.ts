@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { calculateScore } from './common/score'
+import { calculateScore, googleMatrixReturn } from './common/score';
 import { extractData } from './uber/uber.service'
 import { dummyGoogleJsonData } from '../../data/googleResultSample'
 import { fetchGoogleMapsData } from '../../googleMapsCalls/googleDistance'
@@ -51,7 +51,7 @@ app.post('/uberScore', async (c) => {
     const uberJsonData = await c.req.json();
     ({ origin, destination, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate } = extractData(uberJsonData));
     // 2. Get data from google maps api
-    let googleJsonData = await getGoogleEstimatev2(origin, destination, GOOGLE_MAPS_API_KEY); // TODO: INPUT KEY HERE
+    let googleJsonData = await getGoogleEstimatev2(origin, destination, GOOGLE_MAPS_API_KEY) as googleMatrixReturn; // TODO: INPUT KEY HERE
     // 3. Calculate the result for desired output
     const ratingResult = calculateScore(googleJsonData, +passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate);
     return c.json({ ...ratingResult, scoreParameters: { googleJsonData, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate }, googleApiParameters: { origin, destination, key: "secretKey" } });

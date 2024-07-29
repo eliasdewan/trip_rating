@@ -7,6 +7,9 @@ import { ExtractBolt, extractBoltData } from "./bolt.service";
 
 const app = new Hono()
 
+/**
+ *  @Header : key for google maps api key
+ */
 app.post('/boltScore', async (c) => {
   // const { GOOGLE_MAPS_API_KEY } = env<{ GOOGLE_MAPS_API_KEY: string }>(c);
   const GOOGLE_MAPS_API_KEY = c.req.header('key') as string;
@@ -30,12 +33,12 @@ app.post('/boltScore', async (c) => {
 // Testing endpoints 
 app.post('/extractBoltData', async (c) => {
   const extract = extractBoltData(await c.req.json());
-  const key = c.req.header('key');
-  // If key in undefined 
-  if (!key) {
-    return c.json('No key provided', 400)
-  }
-  return c.json({ ...extract, providedKey: key });
+  // const key = c.req.header('key');
+  // // If key in undefined 
+  // if (!key) {
+  //   return c.json('No key provided', 400)
+  // }
+  return c.json(extract);
 })
 
 export default app;

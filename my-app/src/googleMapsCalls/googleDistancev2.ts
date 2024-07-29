@@ -35,7 +35,7 @@ export function getGoogleEstimatev2(origin: string, destination: string, apiKey:
   })
     .then(response => {
       if (!response.ok) {
-        throw new Error(`Network response was not ok from google:', ${response.status}`);
+        throw new Error(`Network response was not ok from google:', ${response.text}, ${response.status}`);
       }
       return response.json();
     })

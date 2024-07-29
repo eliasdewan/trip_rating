@@ -17,31 +17,41 @@ export function extractBoltData(boltJsonData: { [key: string]: string }[]): Extr
       // console.log(extract);
       const text = boltJsonData[i].text;
       // console.log(text);
-      
-      
+
+
 
       // Check for the origin string (address) which is before the destination // FIXME: origin tied to destination error with the dot and distance
-      if (i > 0 && boltJsonData[i + 1] && boltJsonData[i + 1].text.includes('•')) {
-        if (boltJsonData[i + 1].text.includes('ft') || boltJsonData[i + 1].text.includes('mi')) {
+      if (i > 3 && boltJsonData[i + 3] && boltJsonData[i + 3]?.text.includes('•')) {
+        if (boltJsonData[i - 1].text.includes('ft') || boltJsonData[i - 1].text.includes('mi')) {
           extract.origin = text;
         }
       }
 
       // Check for the distance and destination string (e.g., "UB2 • 2.2 mi" or "UB2 • 404 ft") // FIXME: Destination doesnt always contain the dot and distance, (origin, destination and distance are affected)
-      if (text.includes('•') && text.length > 8) {
-        const parts = text.split(' • ');
-        extract.destination = parts[0];
-        if (parts[1].includes('mi')) {
-          extract.distance = parseFloat(parts[1].replace(' mi', ''));
-        } else if (parts[1].includes('ft')) {
-          const feet = parseFloat(parts[1].replace(' ft', ''));
-          extract.distance = (feet / 5280); // Convert feet to miles and fix to 2 decimal places
+      if (i > 4 && boltJsonData[i + 2] && boltJsonData[i + 2]?.text.includes('•')) {
+        if (text.includes('•') && text.length > 8) {
+          const parts = text.split(' • ');
+          extract.destination = parts[0];
+          if (parts[1].includes('mi')) {
+            extract.distance = parseFloat(parts[1].replace(' mi', ''));
+          } else if (parts[1].includes('ft')) {
+            const feet = parseFloat(parts[1].replace(' ft', ''));
+            extract.distance = (feet / 5280); // Convert feet to miles and fix to 2 decimal places
+          }
+        } else {
+          extract.destination = text;
+          extract.distance = 0.404;
         }
       }
+
+
 
       // Check for the pay string (e.g., "£5.59 · Net")
       if (text.includes('£') && text.includes('· Net')) {
         extract.pay = Number(text.split(' ')[0].replace('£', ''));
+        if (extract.distance === 0.404) {
+          extract.distance = extract.pay;
+        }
       }
 
       // Check for the pickup distance (e.g., "404 ft" or "2.2 mi")

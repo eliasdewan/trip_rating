@@ -11,10 +11,6 @@ import boltExample from '../../data/boltTaskerScreenInfo/boltExample'
 
 const app = new Hono()
 
-//let { origin, destination, passengerRating, pay, pickupDistance, pickupTimeEstimate } = extractData(dummyUbberJsonData);
-// console.log(origin, destination, passengerRating, pay, pickupDistance, pickupTimeEstimate);
-
-
 app.post('/', (c) => {
   return c.text('Do you know what you are doing?')
 }).get('/', (c) => {
@@ -43,13 +39,16 @@ app.post('/testQuery', async (c) => {
 
 })
 
+/**
+ * @Header: key for google maps api key
+ */
 app.post('/uberScore', async (c) => {
   let origin, destination, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate;
   // const { GOOGLE_MAPS_API_KEY } = env<{ GOOGLE_MAPS_API_KEY: string }>(c)
   const GOOGLE_MAPS_API_KEY = c.req.header('key') as string;
-    if (!GOOGLE_MAPS_API_KEY) {
-      return c.json('No key provided', 400)
-    }
+  if (!GOOGLE_MAPS_API_KEY) {
+    return c.json('No key provided', 400)
+  }
   try {
     // 1. Get uber data from request and extract data 
     const uberJsonData = await c.req.json();
@@ -59,7 +58,7 @@ app.post('/uberScore', async (c) => {
     // 3. Calculate the result for desired output
     const ratingResult = calculateScore(googleJsonData, +passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate);
     console.log(ratingResult);
-    
+
     return c.json({ ...ratingResult, scoreParameters: { googleJsonData, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate }, googleApiParameters: { origin, destination, key: "secretKey" } });
 
   } catch (error) {

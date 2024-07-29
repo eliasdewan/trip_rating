@@ -1,72 +1,64 @@
-## Trip rating for ridesharing app
+# Trip Rating for Ridesharing App
 
-### For Cloudfare worker deployment
+## Overview
+This project aims to provide an accurate trip rating for ridesharing drivers. By leveraging Google Maps' modern routing capabilities, it offers real-time traffic conditions and precise journey estimates. This helps drivers make informed decisions about accepting or rejecting trips.
+## Sample Preview
+<p align="center">
+<img src="assets/uberSample.jpg" width="200" alt="uberSample"/>
+</p>
+## Features
+- Accurate trip time and distance estimation using Google Maps API.
+- Real-time traffic conditions considered in estimates.
+- Detailed trip scoring based on distance, time, and potential earnings.
+- Deployment on Cloudflare Workers using Hono (TypeScript).
 
-### Using Hono (uses Typescript)
+## Deployment
 
-### Using google maps modern routing for computing data
+### For Cloudflare Worker Deployment
 
-# Deploying - or running as dev
+### Using Hono (TypeScript)
 
-- Clone it
-- set _/my-app_ as active directory in termainal
-- `npm i`
-- `npm run dev`
-- To deploy just run -> `npm run deploy` (cloudfare will ask to login to deploy worker)
+### Using Google Maps Modern Routing for Computing Data
 
-# Problem
+## Deploying - or Running as Dev
 
-Imagine you were first half of two post codes and the amount you will receive for travelling from one place to another. And you are given 10s to decide,
+1. Clone the repository.
+2. Set the `_my-app_` as the active directory in your terminal.
+3. Install the dependencies:
+   ```npm i```
+4. Run the application in development mode:
+```npm run dev```
+5. To deploy, run:
+```npm run deploy```
+Cloudflare will prompt you to log in to deploy the worker.
 
-You have a map preview from one source and nothig from the other.
+## Problem Statement
+Imagine you are given the first half of two postcodes and need to decide, within 10 seconds, whether to accept a trip based on the amount you'll receive for traveling from one place to another. You have a map preview from one source but nothing from the other.
 
-From that information you have to fo a lot of guess work of how long it is going to take you and make your desition to accept or cancel.
+From this information, you need to make a guess about how long the trip will take and decide whether to accept or cancel it. Experienced drivers might be better at predicting trip times, but why rely on guesswork when you can have accurate estimates with traffic conditions taken into account?
 
-Experienced drivers may be better at predicting.
+## Limitations (TODO)
+- The origin and destination are calculated with only the first half of postcodes.
+- Trips within the same postcode currently fail.
+- Some trips might be poorly scored if they cross a single part of the postcode, as the distance API call might overestimate distance and time.
 
-But why do the guess work when you could have an accurate estimate with traffic condintions taken into consideraton.
+## Implementation
+Using Tasker on Android, the screen context is captured and sent as a POST request. The request tries to extract the origin and destination to perform a Google Maps API distance call. Based on the Google API response, the journey duration is sent back, and the trip is scored if needed. For example, it calculates how much the trip will translate to per hour.
 
-# Limitations: TODO:
+## Future Implementation
+More information about the destination trip, such as additional miles and time added to the current journey if the trip is accepted.
+Summary of the trip endpoint, providing an easier-to-understand format for drivers unfamiliar with different areas and locations.
+Cardinal directions from Central London, indicating whether the trip is outside London and the likelihood of returning with another trip.
+Historical area data capture to rate trips, indicating if the destination is a busy area at certain times.
+Reasons for This Project
+As a former Uber and Bolt driver, I remember accepting all trips without knowing the specifics. Sometimes, I felt frustrated when stuck in traffic, with trips taking three times longer but only counting the miles for payment. This project aims to alleviate that frustration by providing accurate trip estimates and potential earnings.
 
-The origin and destination are calculated with only first half of post codes.
+## Reasons for Choosing the Technology
+My first website was hosted on GitLab Pages, which doesn't support scripting and used a GitLab URL and domain. When I wanted to host something with a custom domain, Cloudflare was an option for domain management and free web page hosting. It also offers auto-deployment when connected to a Git repository.
 
-Same post code trips fail currently.
+Initially, Cloudflare Workers seemed too advanced for my knowledge. However, I discovered it supports WASM or JavaScript, and Hono's quickstart guide made it easy to set up. Deploying was as simple as running npm run deploy, with Cloudflare prompting for login credentials.
 
-Some trips could be scored badly if they are just crossing a single first pert of the postcode as the distance api call could over estimate distance and time of trip.
+Google Maps API was chosen for its reliability and extensive capabilities, which I was familiar with from university. Combining this API with Android Tasker for making requests and displaying overlays with data from endpoint calls allows for effective trip estimation and scoring.
 
-# Implementaion:
-
-Using tasker on android, grab the screen context and send a post request,
-
-The request will try to extract origin and destination to do a goole maps api distance call.
-
-From the google api response, send back how long the journey will take and also score the trip if needed.
-For example, how much will it translate to per hour.
-
-# Future implemntation:
-
-More informatin about the toward destination trip, that will tell you how many more miles and how much longer it will add to your current hourney if you thake this trip.
-
-More inforamtion about the end point of trips: Summarized where will this trip take you in an easyer to understand format if you dont know the the different areas and locations.
-
-Possibly: cardinal directions from central london, and also if its outside london area and you are likely to travel back withouth a trip.
-
-Busy areas and times destination: Capture and store historical area data to use for rating trips, this will tell you if you are going towards a busier area.
-
-# Reasons for this project:
-
-I remember being uber and bolt driver and accepting all trips not kowing what was coming. And sometime I would really feel bad when Im stuck in traffic, and the trip takes x3 longer but only counting the miles for the what you get paid.
-
-# Reasons for chooing the tech:
-
-My first website hosted was on git lab pages, it doesnt support any scripting and also it was using a gitlab url and domain. 
-
-When I wated to host someting with a custom domain, cloudfare was one option to buy and manage domains. And it does have free hosting of web pages, auto deployment when you connect to a git repository and make commits.
-I explored a little bit back then and remembered workers but it was too much for what I knew back then about deploying some apps.
-
-After doing a quick search for I discovered it is either WASM or javascript, and some how I discovered hono quickstart page where it describes just to run the commands to create, install node modules and run to test it.
-Having the quick start it was a good place to experiement and play with postman to see if what I was trying to do was somtihgn I could Implement.
-
-Next I was just curious as it was just ```npn run deply``` it can't be that easy to deploy, It doesnt even know my account details for cloudfare right. But It just launched a chrome window asking me to allow connecton and then it deplyed. End points working like magic.
-
-Google maps API because I remembered how much I could do with that from my time in university and I guessed I can get the information about journey estimates while using google Maps it in the web or mobile apps, surely there is an api for that.
+Conclusion
+This project combines Cloudflare Workers, Hono, and Google Maps API to provide a robust solution for ridesharing drivers. By offering accurate trip estimates and scoring, it helps me and possibly some one else willing to try to  make informed decisions, enhancing their overall experience on the job. 

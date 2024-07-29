@@ -1,6 +1,6 @@
 // npm install node-fetch
 
-export async function fetchGoogleMapsData(origin: string, destination: string, call: boolean = true, traffic_model = "best_guess") {
+export async function fetchGoogleMapsData(origin: string, destination: string, call: boolean = true, key: string, traffic_model = "best_guess") {
   console.log(origin, destination)
   const url = 'https://maps.googleapis.com/maps/api/distancematrix/json';
   const queryParams = new URLSearchParams({
@@ -8,7 +8,7 @@ export async function fetchGoogleMapsData(origin: string, destination: string, c
     origins: origin,
     destinations: destination,
     units: 'imperial',
-    key: 'AIzaSyDso8ZpnTpAeWsnveJaKyA57nt2Eyqgj5I',
+    key: key,
     departure_time: Date.now().toString(),
     traffic_model
     // pessimistic and optimistic

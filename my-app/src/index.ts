@@ -1,62 +1,106 @@
 import { Hono } from 'hono'
-import { fetchGoogleMapsData } from './googleDistance'
-import { extractData } from './taskerData'
-import { getGoogleEstimatev2 } from './googleDistancev2'
-import { calculateScore } from './score'
+import uberController from './api/rideSharing/uber.ontroller'
+import boltController from './api/rideSharing/bolt/bolt.controller'
+import { logger } from 'hono/logger'
+import { searchResult } from './data/validator/capture.validator'
+import { zValidator } from '@hono/zod-validator'
+import { object, z } from 'zod'
+import { env } from 'hono/adapter'
+import { failedRequest } from './data/uberTaskerScreenInfo/uberDataSample'
+import { cache } from 'hono/cache'
 
 
+type Bindings = {
+  SECRET_KEY: string;
+  FROM: string;
+  GOOGLE_MAPS_API_KEY: string;
+}
 
-const app = new Hono()
+const app = new Hono<{ Bindings: Bindings }>();
+app.route('/api', uberController);
+app.route('/api', boltController);
 
-const { origin, destination, passengerRating, pay, pickupDistance, pickupTimeEstimate } = extractData();
-console.log(origin, destination, passengerRating, pay, pickupDistance, pickupTimeEstimate);
- 
-app.get('/', (c) => {
-  return c.text('Hello Uber!')
+console.log('Hono running');
+
+app.get('/var', (c) => {
+  // In development both .toml and .dev.vars are used, .dev.vars is used when duplicate
+  // dev.vars are hidden on development run terminal 
+  const some = env(c);
+  const ENV = c.env
+  return c.json({ "env.(c)": some, "Binding c.env": ENV })
 })
 
-app.post('/', async (c) => {
 
-  //let response; 
-  try {
-    //const data = await getGoogleEstimatev2()
-    const data = [
-      {
-        originIndex: 0,
-        destinationIndex: 0,
-        status: {},
-        distanceMeters: 31456,
-        duration: '4216s',
-        condition: 'ROUTE_EXISTS'
-      }
-    ]
+app.post('/testContains', async c => {
+  return c.req.json().
+    then(json => {
+      const valid = searchResult(Object.values(json)[0] as string, failedRequest);
+      return c.json({ valid })
+    }).catch(error => {
+      return c.json({ message: "failed", error })
+    })
+})
 
-    //response = c.json({ data })
-    calculateScore(data, passengerRating, pay, pickupDistance, pickupTimeEstimate);
-    return c.json({ data });
+app.use(cache({
+  cacheName: 'my-app',
+  cacheControl: 'max-age=2', // Set the max-age to 3600 seconds (1 hour)
+  // keyGenerator: async (c) => {
+  //   // Generate a key based on the request body or other parameters
+  //   const body = await c.req.text();
+  //   return `${c.req.url}-${body}`;
+  // },
+  // wait: true
+}))
 
-  } catch (error) {
-    console.error('Error fetching Google estimate:', error);
-    return c.json({ error: 'Failed to fetch Google estimate' });
+
+app.post('/test',
+  // Validation middlewere, if not valid sends 404 Bad Request
+  zValidator('json', z.array(z.record(z.string()))),
+  // Automatically doenst chache if there was an error (with status code)
+  
+  async (c) => {
+    // Ensure that `req.valid` correctly reflects the expected type
+    const validated = c.req.valid('json');
+
+    // ENV (assuming `env` function exists and returns the correct type)
+    const { GOOGLE_MAPS_API_KEY } = env<{ GOOGLE_MAPS_API_KEY: string }>(c);
+
+    // Return the validated data
+    console.log('Validated');
+    // c.status(400);
+    return c.json(validated);
   }
+);
 
+
+//awayResult
+
+
+app.notFound((c) => {
+  return c.text('Page not found, but server is working 😁', 404)
 })
 
-// 🍉 old style
-app.post('/static', async (c) => {
-  console.log("Youre trying the approximate method 📕")
-  try {
-    // Historiacal search - non dynamic
-    const data = await fetchGoogleMapsData(origin, destination);
-    return c.json({ data , some: "here"});
-  } catch (error) {
-    console.error('Error fetching Google estimate:', error);
-    return c.json({ error: 'Failed to fetch Google estimate' });
-  }
+app.onError((err, c) => {
+  console.error(`${err}`)
+  return c.text(`An error occurred: ${err}`, 500,)
 })
 
-// Get string for HTTP request
-//console.log(fetchGoogleMapsData(origin, destination,  false)); // get url without calling
+app.use(logger())
 
 
 export default app
+
+
+// TODO: Need to validate the data contains useful information before making COSTING API CALLS
+//  TODO: check away and holiday,
+
+// TODO: create routes for different types or formats of request
+// ocr and screen grab
+// TODO : Traffic info , use normal distance matrix and then use that time to compare with v2 matrix - use percentage , maye even compae distance and and show inrease in minites
+// OR use thhe traffic unaware mod to do the computing - traffc aware and model
+// https://developers.google.com/maps/documentation/routes/traffic-model
+// https://developers.google.com/maps/documentation/routes/config_trade_offs
+// https://developers.google.com/maps/documentation/distance-matrix
+
+// Auto detect json format and routing
+

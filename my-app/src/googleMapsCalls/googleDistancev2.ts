@@ -1,10 +1,13 @@
-export function getGoogleEstimatev2() {
+import { logger } from "hono/logger";
+
+export function getGoogleEstimatev2(origin: string, destination: string, apiKey: string) {
+
   const url = "https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix"
   const data = {
     "origins": [
       {
         "waypoint": {
-          "address": "UB2 southall"
+          "address": origin
         },
         "routeModifiers": { "avoid_ferries": true }
       }
@@ -12,12 +15,13 @@ export function getGoogleEstimatev2() {
     "destinations": [
       {
         "waypoint": {
-          "address": "E14 London"
+          "address": destination
         }
       }
     ],
     "travelMode": "DRIVE",
-    "routingPreference": "TRAFFIC_AWARE_OPTIMAL"
+    "routingPreference": "TRAFFIC_AWARE_OPTIMAL",
+    "units": "IMPERIAL"
   }
   // routingPreferences // TRAFFIC_UNAWARE // TRAFFIC_AWARE // TRAFFIC_AWARE_OPTIMAL
 
@@ -25,22 +29,22 @@ export function getGoogleEstimatev2() {
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
-      "X-Goog-Api-Key": "AIzaSyDso8ZpnTpAeWsnveJaKyA57nt2Eyqgj5I",
-      "X-Goog-FieldMask": "originIndex,destinationIndex,duration,distanceMeters,status,condition"
+      "X-Goog-Api-Key": apiKey,
+      "X-Goog-FieldMask": "originIndex,destinationIndex,duration,distanceMeters,status,condition,staticDuration,travelAdvisory,localizedValues,fallbackInfo"
     },
     body: JSON.stringify(data)
   })
     .then(response => {
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error(`Network response was not ok from google:', ${response.text}, ${response.status}`);
       }
       return response.json();
     })
     .then(data => {
-      return data;
+      return data; // The actual map data as ../data
     })
     .catch(error => {
-      console.error('Error:', error);
+      console.error('Error from googleDistranceMatrixV2:', error);
       throw error; // Re-throw the error to handle it further if needed
     });
 }

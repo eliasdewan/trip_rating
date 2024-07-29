@@ -20,7 +20,8 @@ export function getGoogleEstimatev2(origin: string, destination: string, apiKey:
       }
     ],
     "travelMode": "DRIVE",
-    "routingPreference": "TRAFFIC_AWARE_OPTIMAL"
+    "routingPreference": "TRAFFIC_AWARE_OPTIMAL",
+    "units": "IMPERIAL"
   }
   // routingPreferences // TRAFFIC_UNAWARE // TRAFFIC_AWARE // TRAFFIC_AWARE_OPTIMAL
 

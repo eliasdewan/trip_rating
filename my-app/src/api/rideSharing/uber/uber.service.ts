@@ -1,5 +1,5 @@
 import uberExtractData from "./uberExtractTaskerData.service";
-
+// TODO : format functions into 1 and create fuction interface or data type for parameter
 export function extractData(jsonData: any) {
   const cleanDataExtracted = uberExtractData(jsonData);
   console.log(cleanDataExtracted, "extractData");

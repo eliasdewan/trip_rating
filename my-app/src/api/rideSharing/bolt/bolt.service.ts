@@ -14,16 +14,20 @@ export function extractBoltData(boltJsonData: { [key: string]: string }[]): Extr
   const extract: Partial<ExtractBolt> = {};
   try {
     for (let i = 0; i < boltJsonData.length; i++) {
+      // console.log(extract);
       const text = boltJsonData[i].text;
+      // console.log(text);
+      
+      
 
-      // Check for the origin string (address) which is before the destination
+      // Check for the origin string (address) which is before the destination // FIXME: origin tied to destination error with the dot and distance
       if (i > 0 && boltJsonData[i + 1] && boltJsonData[i + 1].text.includes('•')) {
         if (boltJsonData[i + 1].text.includes('ft') || boltJsonData[i + 1].text.includes('mi')) {
           extract.origin = text;
         }
       }
 
-      // Check for the distance and destination string (e.g., "UB2 • 2.2 mi" or "UB2 • 404 ft")
+      // Check for the distance and destination string (e.g., "UB2 • 2.2 mi" or "UB2 • 404 ft") // FIXME: Destination doesnt always contain the dot and distance, (origin, destination and distance are affected)
       if (text.includes('•') && text.length > 8) {
         const parts = text.split(' • ');
         extract.destination = parts[0];

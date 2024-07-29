@@ -45,7 +45,11 @@ app.post('/testQuery', async (c) => {
 
 app.post('/uberScore', async (c) => {
   let origin, destination, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate;
-  const { GOOGLE_MAPS_API_KEY } = env<{ GOOGLE_MAPS_API_KEY: string }>(c)
+  // const { GOOGLE_MAPS_API_KEY } = env<{ GOOGLE_MAPS_API_KEY: string }>(c)
+  const GOOGLE_MAPS_API_KEY = c.req.header('key') as string;
+    if (!GOOGLE_MAPS_API_KEY) {
+      return c.json('No key provided', 400)
+    }
   try {
     // 1. Get uber data from request and extract data 
     const uberJsonData = await c.req.json();
@@ -54,6 +58,8 @@ app.post('/uberScore', async (c) => {
     let googleJsonData = await getGoogleEstimatev2(origin, destination, GOOGLE_MAPS_API_KEY) as googleMatrixReturn; // TODO: INPUT KEY HERE
     // 3. Calculate the result for desired output
     const ratingResult = calculateScore(googleJsonData, +passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate);
+    console.log(ratingResult);
+    
     return c.json({ ...ratingResult, scoreParameters: { googleJsonData, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate }, googleApiParameters: { origin, destination, key: "secretKey" } });
 
   } catch (error) {
@@ -67,6 +73,7 @@ app.post('/uberScore', async (c) => {
 
 /**
  *  @UberJsonData
+ *  @Header with key 
  * -> makes request to google maps for data
  */
 app.post('/static', async (c) => {
@@ -74,8 +81,13 @@ app.post('/static', async (c) => {
   try {
     // Historiacal search - non dynamic
     const uberJsonData = await c.req.json()
+    const GOOGLE_MAPS_API_KEY: string = c.req.header('key') as string;
+    if (!GOOGLE_MAPS_API_KEY) {
+      return c.json('No key provided', 400)
+    }
+
     let { origin, destination, passengerRating, pay, pickupDistance, pickupTimeEstimate } = extractData(uberJsonData);
-    const data = await fetchGoogleMapsData(origin, destination);
+    const data = await fetchGoogleMapsData(origin, destination, true, GOOGLE_MAPS_API_KEY);
     // console.log(data.rows[0].elements.distance.values);
     const distanceDuration = data.rows[0].elements[0];
     const distance = distanceDuration.distance
@@ -90,4 +102,10 @@ app.post('/static', async (c) => {
 // Get string for HTTP request
 //console.log(fetchGoogleMapsData(origin, destination,  false)); // get url without calling
 
+
+
+app.post('/extractUberData', async (c) => {
+  const extract = extractData(await c.req.json());
+  return c.json(extract);
+})
 export default app

@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import uberController from './api/rideSharing/uber.ontroller'
+import uberController from './api/rideSharing/uber/uber.ontroller'
 import boltController from './api/rideSharing/bolt/bolt.controller'
 import { logger } from 'hono/logger'
 import { searchResult } from './data/validator/capture.validator'
@@ -10,10 +10,11 @@ import { failedRequest } from './data/uberTaskerScreenInfo/uberDataSample'
 import { cache } from 'hono/cache'
 
 
-type Bindings = {
+export type Bindings = {
   SECRET_KEY: string;
   FROM: string;
   GOOGLE_MAPS_API_KEY: string;
+  TRIP_LOG: KVNamespace;
 }
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -22,12 +23,20 @@ app.route('/api', boltController);
 
 console.log('Hono running');
 
-app.get('/var', (c) => {
+app.get('/var', async (c) => {
   // In development both .toml and .dev.vars are used, .dev.vars is used when duplicate
   // dev.vars are hidden on development run terminal 
   const some = env(c);
-  const ENV = c.env
-  return c.json({ "env.(c)": some, "Binding c.env": ENV })
+  const ENV = c.env;
+  // let value = await c.env.TESTING.get('key')
+  // let set = await c.env.TESTING.put('key','new Item 44')
+  //  console.log(value);
+  //  console.log(set);
+  const key = new Date().toISOString()
+  console.log(key);
+  
+  
+  return c.json({ "env.(c)": some, "Binding c.env": ENV, KV:key })
 })
 
 
@@ -63,7 +72,7 @@ app.post('/test',
     const validated = c.req.valid('json');
 
     // ENV (assuming `env` function exists and returns the correct type)
-    const { GOOGLE_MAPS_API_KEY } = env<{ GOOGLE_MAPS_API_KEY: string }>(c);
+    // const { GOOGLE_MAPS_API_KEY } = env<{ GOOGLE_MAPS_API_KEY: string }>(c);
 
     // Return the validated data
     console.log('Validated');

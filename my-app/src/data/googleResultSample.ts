@@ -1,4 +1,6 @@
-export const dummyGoogleJsonData: {}[] = [
+import { googleMatrixReturn } from "../api/rideSharing/common/score";
+
+export const dummyGoogleJsonData: googleMatrixReturn = [
   {
     originIndex: 0,
     destinationIndex: 0,

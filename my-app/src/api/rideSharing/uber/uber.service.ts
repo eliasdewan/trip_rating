@@ -4,6 +4,7 @@ export function extractData(jsonData: any) {
   const cleanDataExtracted = uberExtractData(jsonData);
   console.log(cleanDataExtracted, "extractData");
 
+  // Two methods of extracting the address, choosing the one with two strings in the array using the status pass
   let locations;
   if (cleanDataExtracted.regFindaddressarrayPass) {
      locations = { origin: cleanDataExtracted.regfindAddresses[0], destination: cleanDataExtracted.regfindAddresses[1] }
@@ -23,3 +24,6 @@ export function extractData(jsonData: any) {
 
   return { ...locations, passengerRating, pay,uberDistance, pickupDistance, pickupTimeEstimate }
 }
+
+// TODO: possible solution to same address and first part of the address, get random locations using the distance and approximate, verify they are within locality of the post code,
+// calcualate the using distance matrix and match the ones that fit with the given distance.

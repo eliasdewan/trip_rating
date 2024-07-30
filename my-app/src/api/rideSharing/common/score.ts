@@ -1,7 +1,10 @@
 export type googleMatrixReturn = [{
   originIndex: number,
   destinationIndex: number,
-  status?: object,
+  status?: {
+    code?: number,
+    message?: string
+  },
   distanceMeters: number,
   duration: string,
   staticDuration?: string,
@@ -76,6 +79,9 @@ export function calculateScore(
 
   try {
     const primaryData = data[0]
+    if (primaryData.status?.code){
+      throw new Error( `Google maps failed ${primaryData.status?.message}`  );
+    }
     console.log(primaryData);
     console.log("calc", (primaryData.distanceMeters / 1000) / miles_to_km + +pickupDistance);
 
@@ -117,6 +123,6 @@ export function calculateScore(
   }
   catch (error) {
     console.log('Calculate Score failed: ', error);
-    return error;
+    throw error;
   }
 }

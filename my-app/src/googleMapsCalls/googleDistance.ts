@@ -1,4 +1,27 @@
 // npm install node-fetch
+export type GoogleMapsSimpleDistanceMatrixReturn =
+  {
+    destination_addresses: string[],
+    origin_addresses: string[],
+    rows:
+    {
+      elements:
+      {
+        distance: {
+          text: string,
+          value: number
+        },
+        duration: {
+          text: string,
+          value: number
+        },
+        status: string,
+      }[],
+    }[],
+    status: string,
+  }
+
+
 
 export async function fetchGoogleMapsData(origin: string, destination: string, call: boolean = true, key: string, traffic_model = "best_guess") {
   console.log(origin, destination)

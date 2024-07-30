@@ -4,7 +4,7 @@ const integerRegex = /\b\d+\b/
 const dicimalRegex = /\d+\.\d+/
 
 export default function uberExtractData(jsonData: any) {
-  const textList: string[] = jsonData.map(item => item.text)
+  const textList: string[] = jsonData.map((item: { text: string; }) => item.text)
 
   // Logging expected results
   let status: { [key: string]: any } = { "logging": true };
@@ -19,7 +19,7 @@ export default function uberExtractData(jsonData: any) {
   status.awayIndex = awayIndex;
   status.awayIndex = textList[awayIndex];
 
-  // Pickup distance and time estimate
+  // Pickup distance and time estimate in minutes and miles
   let pickupDistance = Number(dicimalRegex.exec(textList[awayIndex]))
   let pickupTimeEstimate = Number(integerRegex.exec(textList[awayIndex]))
   status.pickupDistance = pickupDistance;

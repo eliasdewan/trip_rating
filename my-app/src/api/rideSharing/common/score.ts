@@ -33,6 +33,7 @@ export interface CalculatedData {
   perHourRating: number;
   passengerRating: number;
   distanceDifference: number;
+  distanceDifferenceFactor: number;
   trafficIntensity?: number;
 }
 
@@ -41,7 +42,7 @@ export interface CalculatedData {
  * @param data 
  * @param passengerRating 
  * @param pay 
- * @param uberDistance
+ * @param driverAppDistance
  * @param pickupDistance 
  * @param pickupTimeEstimate 
  * @returns { pay,miles,time,timeMinutes,pricePerMile,pricePerHour,perMileRating,perHourRating,passengerRating,distanceDifference}
@@ -50,7 +51,7 @@ export function calculateScore(
   data: googleMatrixReturn,
   passengerRating: number,
   pay: number,
-  uberDistance: number,
+  driverAppDistance: number,
   pickupDistance: number,
   pickupTimeEstimate: number
 ): CalculatedData | any {
@@ -66,7 +67,7 @@ export function calculateScore(
   }
 
   console.log(data, "calculate score using it in score function");
-  // FIXME:  you can have here address not found from google , dont proceed if that happens
+  // TODO:  you can have here address not found from google , find a route with driverAppDistance parameter
   /**
    * [
     {
@@ -79,19 +80,32 @@ export function calculateScore(
 
   try {
     const primaryData = data[0]
-    if (primaryData.status?.code){
-      throw new Error( `Google maps failed ${primaryData.status?.message}`  );
+    if (primaryData.status?.code) {
+      throw new Error(`Google maps failed ${primaryData.status?.message}`);
     }
-    console.log(primaryData);
-    console.log("calc", (primaryData.distanceMeters / 1000) / miles_to_km + +pickupDistance);
+    // console.log(primaryData);
+    // console.log("calc", (primaryData.distanceMeters / 1000) / miles_to_km + +pickupDistance);
 
+    // Miles of the trip
     let miles = (primaryData.distanceMeters / 1000) / miles_to_km + +pickupDistance; //  This miles uses location from half post code to half post code (not good for same area travels)
     console.log(miles.toFixed(2), "miles");
     calculatedData.time = parseFloat(primaryData.duration.replace("s", "")); // remove the s from the last index
 
-    // TRIP DURATION
+    // Minutes of the trip for duration
     calculatedData.timeMinutes = calculatedData.time / 60 + pickupTimeEstimate;
     console.log(calculatedData.timeMinutes.toFixed(2), "minutes");
+
+    // Discrepancies - when the driverAppDistance distance significatly lower than calculated
+    // Tell you how accurately you are predicting (how many less miles used when routing when negative)
+    // You want this number in the positive telling you the google routing is giving over estimated miles
+    calculatedData.distanceDifference = miles - (driverAppDistance + pickupDistance);
+    // Similarly you want the distance difference factor to be > 1 
+    calculatedData.distanceDifferenceFactor = miles / (driverAppDistance + pickupDistance);
+    if (calculatedData.distanceDifferenceFactor > 1.05 || calculatedData.distanceDifferenceFactor < 0.95){
+      miles = miles / calculatedData.distanceDifferenceFactor;
+      calculatedData.timeMinutes = calculatedData.timeMinutes / calculatedData.distanceDifferenceFactor;
+    }
+
     // PRICE PER MILE 
     calculatedData.pricePerMile = (pay / miles);
     console.log(calculatedData.pricePerMile.toFixed(2), " per mile");
@@ -107,10 +121,6 @@ export function calculateScore(
     //⭐ Per Hour rating
     calculatedData.perHourRating = calculatedData.pricePerHour * (100 / desiredHourlyRate);
     console.log(calculatedData.perHourRating.toFixed(2), "phr");
-
-    // Discrepancies - when the uber distance significatly lower than calculated
-    calculatedData.distanceDifference = miles - (uberDistance + pickupDistance);
-    console.log(calculatedData.distanceDifference, "more or less than uber");
 
     // Traffic intensity for static and current time
     if (primaryData.staticDuration) {

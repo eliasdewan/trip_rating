@@ -22,12 +22,12 @@ app.post('/testQuery', async (c) => {
   try {
     // 1. Get uber data from request and extract data 
     const uberJsonData = await c.req.json();
-    let { origin, destination, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate } = extractData(uberJsonData);
+    let { origin, destination, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate } = extractData(uberJsonData);
     console.log(origin, destination, passengerRating, pay, pickupDistance, pickupTimeEstimate)
     // 2. Get data from google maps api
     //const data = await getGoogleEstimatev2()
     // 3. Calculate the result for desired output
-    const ratingResult = calculateScore(dummyGoogleJsonData, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate);
+    const ratingResult = calculateScore(dummyGoogleJsonData, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate);
     return c.json(ratingResult);
 
   } catch (error) {
@@ -43,7 +43,7 @@ app.post('/testQuery', async (c) => {
 app.post('/uberScore', async (c) => {
 
 
-  let origin, destination, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate;
+  let origin, destination, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate;
   // const { GOOGLE_MAPS_API_KEY } = env<{ GOOGLE_MAPS_API_KEY: string }>(c)
   const GOOGLE_MAPS_API_KEY = c.req.header('key') as string;
   if (!GOOGLE_MAPS_API_KEY) {
@@ -55,28 +55,31 @@ app.post('/uberScore', async (c) => {
     // Store the request in database
     await c.env.TRIP_LOG.put(`${new Date().toISOString()} uberScore:Request`, JSON.stringify(uberJsonData));
 
-    ({ origin, destination, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate } = extractData(uberJsonData));
+    ({ origin, destination, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate } = extractData(uberJsonData));
     // 2. Get data from google maps api
     let googleJsonData;
+
+    // If origin and destination are samme, dont call google api
     if (origin === destination) {
-      googleJsonData = googleMockDistanceMatrixCall(uberDistance, pickupDistance, pickupTimeEstimate) as googleMatrixReturn;
+      googleJsonData = googleMockDistanceMatrixCall(driverAppDistance, pickupDistance, pickupTimeEstimate) as googleMatrixReturn;
+      destination = "Same as origin " + destination;
     } else {
       googleJsonData = await getGoogleEstimatev2(origin, destination, GOOGLE_MAPS_API_KEY) as googleMatrixReturn; // FIXME: Origin and destination are same schenaio
     }
     // 3. Calculate the result for desired output
-    const ratingResult = calculateScore(googleJsonData, +passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate);
+    const ratingResult = calculateScore(googleJsonData, +passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate);
     console.log(ratingResult);
-    
-    const sucessResponse = { ...ratingResult, scoreParameters: { googleJsonData, passengerRating, pay, uberDistance, pickupDistance, pickupTimeEstimate }, googleApiParameters: { origin, destination, key: "secretKey" } };
-    await c.env.TRIP_LOG.put(`${new Date().toISOString()} uberScore:SuccessResponse}`,JSON.stringify(sucessResponse));
+
+    const sucessResponse = { ...ratingResult, scoreParameters: { googleJsonData, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate }, googleApiParameters: { origin, destination, key: "secretKey" } };
+    await c.env.TRIP_LOG.put(`${new Date().toISOString()} uberScore:SuccessResponse}`, JSON.stringify(sucessResponse));
     return c.json(sucessResponse);
-    
+
   } catch (error) {
 
     console.error('Error running score api:', error);
     const errorResponse = { error: `${error} Failed to fetch Google estimate from google v2 score api `, usedLocation: [origin, destination] };
     await c.env.TRIP_LOG.put(`${new Date().toISOString()} uberScore:ErrorResponse}`, JSON.stringify(errorResponse));
-    
+
     return c.json(errorResponse, 400); // TODO Change to this dynamic routing string
   }
 

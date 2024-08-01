@@ -42,6 +42,7 @@ export function extractBoltData(boltJsonData: { [key: string]: string }[]): Extr
           extract.destination = text;
           extract.distance = 0.404;
         }
+        extract.destination = extract.destination.concat(" UK"); // TODO: Mitigation for when the postcode like N5 and used in uk
       }
 
 

@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import uberController from './api/rideSharing/uber/uber.ontroller'
+import uberController from './api/rideSharing/uber/uber.controller'
 import boltController from './api/rideSharing/bolt/bolt.controller'
 import { logger } from 'hono/logger'
 import { searchResult } from './data/validator/capture.validator'

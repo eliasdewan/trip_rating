@@ -1,11 +1,14 @@
 # Trip Rating for Ridesharing App
 
 ## Overview
-This project aims to provide an accurate trip rating for ridesharing drivers. By leveraging Google Maps' modern routing capabilities, it offers real-time traffic conditions and precise journey estimates. This helps drivers make informed decisions about accepting or rejecting trips.
+This project aims to provide an accurate trip rating for ridesharing drivers. By leveraging Google Maps' modern routing capabilities, it offers real-time traffic conditions and precise journey estimates. 
+
+This helps drivers make informed decisions about accepting or rejecting trips.
 ## Sample Preview
 <p align="center">
 <img src="assets/uberSample.jpg" width="200" alt="uberSample"/>
 </p>
+
 ## Features
 - Accurate trip time and distance estimation using Google Maps API.
 - Real-time traffic conditions considered in estimates.
@@ -33,24 +36,26 @@ This project aims to provide an accurate trip rating for ridesharing drivers. By
 Cloudflare will prompt you to log in to deploy the worker.
 
 ## Problem Statement
-Imagine you are given the first half of two postcodes and need to decide, within 10 seconds, whether to accept a trip based on the amount you'll receive for traveling from one place to another. You have a map preview from one source but nothing from the other.
+Imagine you are given two outward codes (the first half of a postcodes) and need to decide, within 10 seconds, whether to accept a trip based on the amount you'll receive for traveling from one place to another. You have a map preview from uber but nothing from the bolt.
 
 From this information, you need to make a guess about how long the trip will take and decide whether to accept or cancel it. Experienced drivers might be better at predicting trip times, but why rely on guesswork when you can have accurate estimates with traffic conditions taken into account?
 
 ## Limitations (TODO)
-- The origin and destination are calculated with only the first half of postcodes.
-- Trips within the same postcode currently fail.
-- Some trips might be poorly scored if they cross a single part of the postcode, as the distance API call might overestimate distance and time.
+- The origin and destination are calculated with only outward codes (the first half of a postcodes).
+- Trips with the same postcode from uber will use 5 min per mile staic value.
+- Some trips might be poorly scored if they cross a single district as the api will center on the outward codes location, basically overestimate distance and time.
+- A difference factor is currently in place to let the user know of the calcualted distance divided by the in app given distance.
 
 ## Implementation
 Using Tasker on Android, the screen context is captured and sent as a POST request. The request tries to extract the origin and destination to perform a Google Maps API distance call. Based on the Google API response, the journey duration is sent back, and the trip is scored if needed. For example, it calculates how much the trip will translate to per hour.
 
 ## Future Implementation
-More information about the destination trip, such as additional miles and time added to the current journey if the trip is accepted.
-Summary of the trip endpoint, providing an easier-to-understand format for drivers unfamiliar with different areas and locations.
-Cardinal directions from Central London, indicating whether the trip is outside London and the likelihood of returning with another trip.
+More information about the destination trip, such as additional miles and time added to the current journey if the trip is accepted.\
+Summary of the trip endpoint, providing an easier-to-understand format for drivers unfamiliar with different areas and locations.\
+Cardinal directions from Central London, indicating whether the trip is outside London and the likelihood of returning with another trip.\
 Historical area data capture to rate trips, indicating if the destination is a busy area at certain times.
-Reasons for This Project
+
+## Reasons for This Project
 As a former Uber and Bolt driver, I remember accepting all trips without knowing the specifics. Sometimes, I felt frustrated when stuck in traffic, with trips taking three times longer but only counting the miles for payment. This project aims to alleviate that frustration by providing accurate trip estimates and potential earnings.
 
 ## Reasons for Choosing the Technology

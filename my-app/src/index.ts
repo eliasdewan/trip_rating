@@ -8,7 +8,7 @@ import { object, z } from 'zod'
 import { env } from 'hono/adapter'
 import { failedRequest } from './data/uberTaskerScreenInfo/uberDataSample'
 import { cache } from 'hono/cache'
-import { getOutcodeData } from './api/rideSharing/common/outCodes'
+import { getOutcodeData, getOutcodeDataString } from './api/rideSharing/common/outCodes'
 
 
 export type Bindings = {
@@ -96,8 +96,9 @@ app.onError((err, c) => {
 })
 
 app.use(logger());
-console.log(getOutcodeData("EC1"));
-console.log(getOutcodeData("EX1"));
+// console.log(getOutcodeDataString("SE1X, dfgsdfg"));
+// console.log(getOutcodeDataString("WC1 sdfgsdfgAEDFG"));
+// console.log(getOutcodeDataString("HG5 sdfgsdfgAEDFG"));
 
 export default app
 

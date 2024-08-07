@@ -1,11 +1,11 @@
-export interface PostCodelocalityNameDetailed {
+export interface DetailedPostalCode {
   localityName: string,
   distanceFromLondon: number,
   directionFromLondon: "C" | "N" | "E" | "S" | "W" | "NE" | "NW" | "SE" | "SW",
   otherNames: string[];
 }
 
-export const postCodelocality: { [postCode: string]: PostCodelocalityNameDetailed } = {
+export const postCodelocality: { [postCode: string]: DetailedPostalCode } = {
   AL: { localityName: "St Albans", distanceFromLondon: 21, directionFromLondon: "N", otherNames: [] },
   B: { localityName: "Birmingham", distanceFromLondon: 113, directionFromLondon: "NW", otherNames: [] },
   BA: { localityName: "Bath", distanceFromLondon: 97, directionFromLondon: "W", otherNames: [] },

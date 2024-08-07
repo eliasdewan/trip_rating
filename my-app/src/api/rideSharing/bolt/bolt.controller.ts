@@ -3,6 +3,7 @@ import { getGoogleEstimateV2 } from "../../../googleMapsCalls/googleDistanceV2";
 import { CalculatedData, calculateScore, googleMatrixReturn } from "../common/score";
 import { ExtractBolt, extractBoltData } from "./bolt.service";
 import { Bindings } from "../../..";
+import { getOutcodeDataString } from "../common/outCodes";
 
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -24,14 +25,14 @@ app.post('/boltScore', async (c) => {
 
     let googleJsonData = await getGoogleEstimateV2(origin, destination, GOOGLE_MAPS_API_KEY) as googleMatrixReturn; // TODO: INPUT KEY HERE
     const ratingResult: CalculatedData = calculateScore(googleJsonData, passengerRating, pay, distance, pickupDistance, pickupTimeEstimate);
-
-    const successResponse = { message: "Success", ...ratingResult, googleJsonData, extract: { origin, destination, distance, pay, pickupDistance, pickupTimeEstimate, passengerRating } };
+    const destinationInfoString = getOutcodeDataString(destination);
+    const successResponse = { message: "Success", ...ratingResult, destinationInfoString, googleJsonData, extract: { origin, destination, distance, pay, pickupDistance, pickupTimeEstimate, passengerRating } };
     await c.env.TRIP_LOG.put(`${new Date().toISOString()} boltScore:SuccessResponse`, JSON.stringify(successResponse));
-    
+
     return c.json(successResponse);
 
   } catch (error) {
-    
+
     const errorResponse = { message: "data extraction or google  failed, aborting ", error };
     await c.env.TRIP_LOG.put(`${new Date().toISOString()} boltScore:ErrorResponse}`, JSON.stringify(errorResponse));
 

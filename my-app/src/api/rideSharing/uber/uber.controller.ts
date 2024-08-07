@@ -6,6 +6,7 @@ import { GoogleMapsSimpleDistanceMatrixReturn, fetchGoogleMapsData } from '../..
 import { getGoogleEstimateV2 } from '../../../googleMapsCalls/googleDistanceV2'
 import { googleMockDistanceMatrixCall } from '../../../googleMapsCalls/googleMockDistanceMatrix';
 import { Bindings } from '../../..';
+import { getOutcodeDataString } from '../common/outCodes';
 
 const app = new Hono<{ Bindings: Bindings }>()
 
@@ -77,7 +78,7 @@ app.post('/uberScore', async (c) => {
     let estimateFactor = googleDistanceMiles / combinedGivenDistanceMiles;
     if (estimateFactor > 1.05) {
       // over estimating (could be diversion due to traffic). Need to check with google estimate with traffic unaware.
-    } else if(estimateFactor < 0.95){
+    } else if (estimateFactor < 0.95) {
       // under estimating (could be short journey, just crossing one district or driverApp not taking some road closure into account)
       // may need to consider traffic conditions
     }
@@ -85,8 +86,9 @@ app.post('/uberScore', async (c) => {
     // 4. Calculate the result for desired output
     const ratingResult = calculateScore(googleJsonData, +passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate);
     console.log(ratingResult);
+    const destinationInfoString = getOutcodeDataString(destination as string);
 
-    const successResponse = { ...ratingResult, scoreParameters: { googleJsonData, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate }, googleApiParameters: { origin, destination, key: "secretKey" } };
+    const successResponse = { ...ratingResult, destinationInfoString, scoreParameters: { googleJsonData, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate }, googleApiParameters: { origin, destination, key: "secretKey" } };
     await c.env.TRIP_LOG.put(`${new Date().toISOString()} uberScore:SuccessResponse}`, JSON.stringify(successResponse));
     return c.json(successResponse);
 

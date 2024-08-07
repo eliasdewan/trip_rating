@@ -1,7 +1,7 @@
 import { postCodelocality } from "./postCodeArea";
 
 // This approach is o(1) for searching. looking up an object by key is most efficient
-interface DetailedOutcode {
+export interface DetailedOutcode {
   TFLZone: number,
   congestionZone: boolean,
   distanceFromLondon: number,

@@ -1,5 +1,6 @@
-import { aroundLondonOutcodes, multiCentralLondonOutcodes } from "../../../data/location/outcodes";
-import { postCodelocality } from "../../../data/location/postCodeArea";
+import { object } from "zod";
+import { DetailedOutcode, aroundLondonOutcodes, multiCentralLondonOutcodes } from "../../../data/location/outcodesData";
+import { postCodelocality, DetailedPostalCode } from '../../../data/location/postCodeArea';
 
 // const outcodeRegex = /^([A-Z]{1,2}\d{1,2}[A-Z]?)/ // checks for outcode and grabs from string (outcode and subOutcodes)
 const outcodeRegex = /^([A-Z]{1,2}\d{1,2}[A-Z]?)\b(?=[^,]*,?)/ //STRONG checks for outcode and grabs from string (outcode and subOutcodes)
@@ -14,33 +15,27 @@ const getOutcode = (text: string) => { const outcodeMatch = text.match(outcodeRe
 const getSubOtcode = (text: string) => { const subOutcodeMatch = getOutcode(text).match(subOutcodeRegex); return subOutcodeMatch ? subOutcodeMatch[1] : "" }
 const getPostalCode = (text: string) => { const postalCodeMatch = getOutcode(text).match(postalAreaRegex); return postalCodeMatch ? postalCodeMatch[1] : ""; }
 
-export function getOutcodeData(destinationString = "SE85, Southall") {
+export function getOutcodeDataString(outCodeString: string) {
+  const result = getOutcodeData(outCodeString)
+  if (typeof (result) === "string") {
+    return result;
+  } else if ("TFLZone" in result) {
+    return `Zone ${result.TFLZone} ${result.distanceFromLondon}m ${result.directionFromLondon} from London, ${result.localityName} ${result.areaName}`
+  }
+  else return `LONG ${result.distanceFromLondon}m ${result.directionFromLondon} from London, ${result.localityName}`
+}
+
+export function getOutcodeData(destinationString: string) {
 
   if (checkOutcode(destinationString)) {
-    // start checking outcode
-    if (multiCentralLondonOutcodes[getSubOtcode(destinationString)]) {
-      const result = multiCentralLondonOutcodes[getSubOtcode(destinationString)];
-      console.log("getting the multiCentralLondonOutcodes info for:", destinationString);
-      console.log(JSON.stringify(multiCentralLondonOutcodes[getSubOtcode(destinationString)]));
-      `${result.distanceFromLondon}m ${result.directionFromLondon} from London, ${result.localityName} ${result.areaName}`
-
-    } else if (multiCentralLondonOutcodes[getOutcode(destinationString)]) {
-      const result = multiCentralLondonOutcodes[getOutcode(destinationString)];
-      console.log("getting the multiCentralLondonOutcodes (but was given outcode) info for:", destinationString);
-      console.log(JSON.stringify(multiCentralLondonOutcodes[getOutcode(destinationString)]));
-      return `${result.distanceFromLondon}m ${result.directionFromLondon} from London, ${result.localityName} ${result.areaName}`
+    if (multiCentralLondonOutcodes[getSubOtcode(destinationString)] || multiCentralLondonOutcodes[getOutcode(destinationString)]) {
+      return multiCentralLondonOutcodes[getSubOtcode(destinationString)] ? multiCentralLondonOutcodes[getSubOtcode(destinationString)] : multiCentralLondonOutcodes[getOutcode(destinationString)];
     }
     else if (aroundLondonOutcodes[getOutcode(destinationString)]) {
-      const result = aroundLondonOutcodes[getOutcode(destinationString)];
-      console.log("getting the aroundLondonOutcodes info for:", destinationString);
-      console.log(JSON.stringify(aroundLondonOutcodes[getOutcode(destinationString)]));
-      `${result.distanceFromLondon}m ${result.directionFromLondon} from London, ${result.localityName} ${result.areaName}`
+      return aroundLondonOutcodes[getOutcode(destinationString)];
     }
     else if (postCodelocality[getPostalCode(destinationString)]) {
-      const result = postCodelocality[getPostalCode(destinationString)];
-      console.log("getting the postal info for:", destinationString);
-      console.log(JSON.stringify(postCodelocality[getPostalCode(destinationString)]));
-      return `${result.distanceFromLondon}m ${result.directionFromLondon} from London, ${result.localityName}`
+      return postCodelocality[getPostalCode(destinationString)];
     } else {
       console.log("No postal code found in data");
       return "No postal in data"

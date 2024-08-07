@@ -14,10 +14,10 @@ preview_id = "705f3cfd6253433dabaca0cbd481cd35"
 # binding = "MY_BUCKET"
 # bucket_name = "my-bucket"
 
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "my-database"
-# database_id = ""
+[[d1_databases]]
+binding = "DB"
+database_name = "sql-database"
+database_id = "3fc63280-2b7b-4e88-949c-658b1c03e474"
 
 # [ai]
 # binding = "AI"

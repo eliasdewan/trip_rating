@@ -6,7 +6,7 @@ export function googleMockDistanceMatrixCall(driverAppDistance: number, pickupDi
     status: {},
     distanceMeters: driverAppDistance * 1609, // in meters
     duration: (driverAppDistance / 0.2 * 60 ).toFixed(0).concat('s'), // in seconds
-    condition: 'MOCK_ROUTE'
+    condition: 'GUESS_ROUTE_CALCULATED'
   }]
   console.log("Running mock google result", driverAppDistance, result);
   

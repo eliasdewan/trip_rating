@@ -1,6 +1,8 @@
 import { logger } from "hono/logger";
 
-export function getGoogleEstimatev2(origin: string, destination: string, apiKey: string) {
+export function getGoogleEstimateV2(origin: string, destination: string, apiKey: string, routingPreference =  "TRAFFIC_AWARE_OPTIMAL") {
+
+// TODO: Try for origin and destination types , format to accept lat lng with conditional checking
 
   const url = "https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix"
   const data = {
@@ -20,7 +22,7 @@ export function getGoogleEstimatev2(origin: string, destination: string, apiKey:
       }
     ],
     "travelMode": "DRIVE",
-    "routingPreference": "TRAFFIC_AWARE_OPTIMAL",
+    "routingPreference": routingPreference,
     "units": "IMPERIAL"
   }
   // routingPreferences // TRAFFIC_UNAWARE // TRAFFIC_AWARE // TRAFFIC_AWARE_OPTIMAL

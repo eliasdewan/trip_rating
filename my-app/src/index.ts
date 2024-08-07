@@ -8,6 +8,7 @@ import { object, z } from 'zod'
 import { env } from 'hono/adapter'
 import { failedRequest } from './data/uberTaskerScreenInfo/uberDataSample'
 import { cache } from 'hono/cache'
+import { getOutcodeData } from './api/rideSharing/common/outCodes'
 
 
 export type Bindings = {
@@ -63,9 +64,9 @@ app.use(cache({
 
 
 app.post('/test',
-  // Validation middlewere, if not valid sends 404 Bad Request
+  // Validation middleware, if not valid sends 404 Bad Request
   zValidator('json', z.array(z.record(z.string()))),
-  // Automatically doenst chache if there was an error (with status code)
+  // Automatically doesn't cache if there was an error (with status code)
   
   async (c) => {
     // Ensure that `req.valid` correctly reflects the expected type
@@ -94,8 +95,9 @@ app.onError((err, c) => {
   return c.text(`An error occurred: ${err}`, 500,)
 })
 
-app.use(logger())
-
+app.use(logger());
+console.log(getOutcodeData("EC1"));
+console.log(getOutcodeData("EX1"));
 
 export default app
 

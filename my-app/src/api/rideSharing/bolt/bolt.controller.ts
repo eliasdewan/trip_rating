@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { getGoogleEstimatev2 } from "../../../googleMapsCalls/googleDistancev2";
+import { getGoogleEstimateV2 } from "../../../googleMapsCalls/googleDistanceV2";
 import { CalculatedData, calculateScore, googleMatrixReturn } from "../common/score";
 import { ExtractBolt, extractBoltData } from "./bolt.service";
 import { Bindings } from "../../..";
@@ -22,13 +22,13 @@ app.post('/boltScore', async (c) => {
   try {
     const { origin, destination, distance, pay, pickupDistance, pickupTimeEstimate, passengerRating }: ExtractBolt = extractBoltData(boltJsonData);
 
-    let googleJsonData = await getGoogleEstimatev2(origin, destination, GOOGLE_MAPS_API_KEY) as googleMatrixReturn; // TODO: INPUT KEY HERE
+    let googleJsonData = await getGoogleEstimateV2(origin, destination, GOOGLE_MAPS_API_KEY) as googleMatrixReturn; // TODO: INPUT KEY HERE
     const ratingResult: CalculatedData = calculateScore(googleJsonData, passengerRating, pay, distance, pickupDistance, pickupTimeEstimate);
 
-    const sucessReponse = { message: "Success", ...ratingResult, googleJsonData, extract: { origin, destination, distance, pay, pickupDistance, pickupTimeEstimate, passengerRating } };
-    await c.env.TRIP_LOG.put(`${new Date().toISOString()} boltScore:SucessResponse}`, JSON.stringify(sucessReponse));
+    const successResponse = { message: "Success", ...ratingResult, googleJsonData, extract: { origin, destination, distance, pay, pickupDistance, pickupTimeEstimate, passengerRating } };
+    await c.env.TRIP_LOG.put(`${new Date().toISOString()} boltScore:SuccessResponse`, JSON.stringify(successResponse));
     
-    return c.json(sucessReponse);
+    return c.json(successResponse);
 
   } catch (error) {
     

@@ -24,6 +24,7 @@ export type googleMatrixReturn = [{
 
 export interface CalculatedData {
   pay: number;
+  routing: String;
   miles: number;
   time: number;
   timeMinutes: number;
@@ -63,7 +64,7 @@ export function calculateScore(
 
   const calculatedData: Partial<CalculatedData> = {
     pay,
-    passengerRating
+    passengerRating,
   }
 
   console.log(data, "calculate score using it in score function");
@@ -86,28 +87,33 @@ export function calculateScore(
     // console.log(primaryData);
     // console.log("calc", (primaryData.distanceMeters / 1000) / miles_to_km + +pickupDistance);
 
+    // Route type - from google or static calculated
+    calculatedData.routing = primaryData.condition;
     // Miles of the trip
-    let miles = (primaryData.distanceMeters / 1000) / miles_to_km + +pickupDistance; //  This miles uses location from half post code to half post code (not good for same area travels)
-    console.log(miles.toFixed(2), "miles");
-    calculatedData.time = parseFloat(primaryData.duration.replace("s", "")); // remove the s from the last index
+    calculatedData.miles = (primaryData.distanceMeters / 1000) / miles_to_km + +pickupDistance; //  This miles uses location from half post code to half post code (not good for same area travels)
+    console.log(calculatedData.miles.toFixed(2), "miles");
+    calculatedData.time = parseFloat(primaryData.duration.replace("s", "")); // remove the s from the last index // TODO: Unnecessary variable
 
     // Minutes of the trip for duration
     calculatedData.timeMinutes = calculatedData.time / 60 + pickupTimeEstimate;
     console.log(calculatedData.timeMinutes.toFixed(2), "minutes");
 
-    // Discrepancies - when the driverAppDistance distance significatly lower than calculated
+    // Discrepancies - when the driverAppDistance distance significantly lower than calculated
     // Tell you how accurately you are predicting (how many less miles used when routing when negative)
     // You want this number in the positive telling you the google routing is giving over estimated miles
-    calculatedData.distanceDifference = miles - (driverAppDistance + pickupDistance);
+    calculatedData.distanceDifference = calculatedData.miles - (driverAppDistance + pickupDistance);
     // Similarly you want the distance difference factor to be > 1 
-    calculatedData.distanceDifferenceFactor = miles / (driverAppDistance + pickupDistance);
+    calculatedData.distanceDifferenceFactor = calculatedData.miles / (driverAppDistance + pickupDistance);
+    
     if (calculatedData.distanceDifferenceFactor > 1.05 || calculatedData.distanceDifferenceFactor < 0.95){
-      miles = miles / calculatedData.distanceDifferenceFactor;
-      calculatedData.timeMinutes = calculatedData.timeMinutes / calculatedData.distanceDifferenceFactor;
+      // FIXME: Possible under estimation in traffic condition when longer journey is quicker but driverAppDistance is showing shorter distance in miles. Use factoring only smaller journeys
+      // TODO: Possible solution: Calculate a set values and display both as factored and non factored 
+      // miles = miles / calculatedData.distanceDifferenceFactor;
+      // calculatedData.timeMinutes = calculatedData.timeMinutes / calculatedData.distanceDifferenceFactor;
     }
 
     // PRICE PER MILE 
-    calculatedData.pricePerMile = (pay / miles);
+    calculatedData.pricePerMile = (pay / calculatedData.miles);
     console.log(calculatedData.pricePerMile.toFixed(2), " per mile");
 
     //⌛ PRICE PER HOUR

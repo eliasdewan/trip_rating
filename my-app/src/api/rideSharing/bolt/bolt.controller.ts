@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { getGoogleEstimateV2 } from "../../../googleMapsCalls/googleDistanceV2";
-import { CalculatedData, calculateScore, googleMatrixReturn } from "../common/score";
+import { computeRouteMatrixV2, computeRoutesV2, googleRouteResponse } from "../../../googleMapsCalls/googleDistanceV2";
+import { CalculatedDataType, calculateScore } from "../common/score";
 import { ExtractBolt, extractBoltData } from "./bolt.service";
 import { Bindings } from "../../..";
 import { getOutcodeDataString } from "../common/outCodes";
@@ -23,8 +23,8 @@ app.post('/boltScore', async (c) => {
   try {
     const { origin, destination, distance, pay, pickupDistance, pickupTimeEstimate, passengerRating }: ExtractBolt = extractBoltData(boltJsonData);
 
-    let googleJsonData = await getGoogleEstimateV2(origin, destination, GOOGLE_MAPS_API_KEY) as googleMatrixReturn; // TODO: INPUT KEY HERE
-    const ratingResult: CalculatedData = calculateScore(googleJsonData, passengerRating, pay, distance, pickupDistance, pickupTimeEstimate);
+    let googleJsonData = await computeRoutesV2(origin, destination, GOOGLE_MAPS_API_KEY) as googleRouteResponse; // TODO: INPUT KEY HERE
+    const ratingResult: CalculatedDataType = calculateScore(googleJsonData, passengerRating, pay, distance, pickupDistance, pickupTimeEstimate);
     const destinationInfoString = getOutcodeDataString(destination);
     const successResponse = { message: "Success", ...ratingResult, destinationInfoString, googleJsonData, extract: { origin, destination, distance, pay, pickupDistance, pickupTimeEstimate, passengerRating } };
     await c.env.TRIP_LOG.put(`${new Date().toISOString()} boltScore:SuccessResponse`, JSON.stringify(successResponse));
@@ -32,8 +32,7 @@ app.post('/boltScore', async (c) => {
     return c.json(successResponse);
 
   } catch (error) {
-
-    const errorResponse = { message: "data extraction or google  failed, aborting ", error };
+    const errorResponse = { message: "data extraction or google  failed, aborting ", error};
     await c.env.TRIP_LOG.put(`${new Date().toISOString()} boltScore:ErrorResponse}`, JSON.stringify(errorResponse));
 
     return c.json(errorResponse, 400);

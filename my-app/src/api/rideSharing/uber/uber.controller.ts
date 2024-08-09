@@ -1,10 +1,10 @@
 import { Hono } from 'hono'
-import { calculateScore, googleMatrixReturn } from '../common/score';
+import { calculateScore } from '../common/score';
 import { extractData } from './uber.service'
 import { dummyGoogleJsonData } from '../../../data/googleResultSample'
 import { GoogleMapsSimpleDistanceMatrixReturn, fetchGoogleMapsData } from '../../../googleMapsCalls/googleDistance'
-import { getGoogleEstimateV2 } from '../../../googleMapsCalls/googleDistanceV2'
-import { googleMockDistanceMatrixCall } from '../../../googleMapsCalls/googleMockDistanceMatrix';
+import { computeRouteMatrixV2, computeRoutesV2, googleMatrixResponse as googleMatrixResponse, googleRouteResponse as googleRouteResponse } from '../../../googleMapsCalls/googleDistanceV2'
+import { googleMockDistanceMatrixCall, googleMockDistanceRouteCall } from '../../../googleMapsCalls/staticGooglemockDistance';
 import { Bindings } from '../../..';
 import { getOutcodeDataString } from '../common/outCodes';
 
@@ -60,33 +60,30 @@ app.post('/uberScore', async (c) => {
 
     // 2. Extract data from the request data
     ({ origin, destination, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate } = extractData(uberJsonData));
+    const destinationInfoString = getOutcodeDataString(destination as string);
 
     // 3. Get data from google maps api or use static 
     let googleJsonData;
 
     // If origin and destination are same, don't call google api, for uber 
+    // There can be same outcode but different location. (UB2, Southall and UB2, London or UB2, Southall and UB2 Norwood Green)
     if (origin === destination) {
-      googleJsonData = googleMockDistanceMatrixCall(driverAppDistance, pickupDistance, pickupTimeEstimate) as googleMatrixReturn;
+      // googleJsonData = googleMockDistanceMatrixCall(driverAppDistance, pickupDistance, pickupTimeEstimate) as googleMatrixResponse;
+      googleJsonData = googleMockDistanceRouteCall(driverAppDistance, pickupDistance, pickupTimeEstimate) as googleRouteResponse;
       destination = "Same as origin " + destination;
     } else {
-      googleJsonData = await getGoogleEstimateV2(origin, destination, GOOGLE_MAPS_API_KEY) as googleMatrixReturn; // FIXME: Origin and destination are same scenario
-    }
-
-    // TODO: Check distance difference and make traffic unaware google maps api call to see if the route distance matches with the given uberDistance
-    let googleDistanceMiles = googleJsonData[0].distanceMeters / 1.609;
-    let combinedGivenDistanceMiles = driverAppDistance + pickupDistance;
-    let estimateFactor = googleDistanceMiles / combinedGivenDistanceMiles;
-    if (estimateFactor > 1.05) {
-      // over estimating (could be diversion due to traffic). Need to check with google estimate with traffic unaware.
-    } else if (estimateFactor < 0.95) {
-      // under estimating (could be short journey, just crossing one district or driverApp not taking some road closure into account)
-      // may need to consider traffic conditions
+      googleJsonData = await computeRoutesV2(origin, destination, GOOGLE_MAPS_API_KEY) as googleRouteResponse;
+      // TODO : there could be other cases where the route did not work anything, using static when there is no distance
+      if (!googleJsonData.routes[0].distanceMeters) {
+        console.log("Found no distance from google maps, possibly same origin and destination");
+        googleJsonData = googleMockDistanceRouteCall(driverAppDistance, pickupDistance, pickupTimeEstimate) as googleRouteResponse;
+        destination = "Same as origin " + destination;
+      }
     }
 
     // 4. Calculate the result for desired output
     const ratingResult = calculateScore(googleJsonData, +passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate);
     console.log(ratingResult);
-    const destinationInfoString = getOutcodeDataString(destination as string);
 
     const successResponse = { ...ratingResult, destinationInfoString, scoreParameters: { googleJsonData, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate }, googleApiParameters: { origin, destination, key: "secretKey" } };
     await c.env.TRIP_LOG.put(`${new Date().toISOString()} uberScore:SuccessResponse}`, JSON.stringify(successResponse));

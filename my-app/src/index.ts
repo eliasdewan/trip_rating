@@ -53,7 +53,7 @@ app.post('/testContains', async c => {
 
 app.use(cache({
   cacheName: 'my-app',
-  cacheControl: 'max-age=2', // Set the max-age to 3600 seconds (1 hour)
+  cacheControl: 'max-age=10', // Set the max-age to 3600 seconds (1 hour)
   // keyGenerator: async (c) => {
   //   // Generate a key based on the request body or other parameters
   //   const body = await c.req.text();

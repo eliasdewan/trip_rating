@@ -1,14 +1,17 @@
 import { Hono } from 'hono'
 import uberController from './api/rideSharing/uber/uber.controller'
 import boltController from './api/rideSharing/bolt/bolt.controller'
+import clientController from './client/client.controller'
 import { logger } from 'hono/logger'
 import { searchResult } from './data/validator/capture.validator'
 import { zValidator } from '@hono/zod-validator'
-import { object, z } from 'zod'
+import { input, object, z } from 'zod'
 import { env } from 'hono/adapter'
 import { failedRequest } from './data/uberTaskerScreenInfo/uberDataSample'
 import { cache } from 'hono/cache'
 import { getOutcodeData, getOutcodeDataString } from './api/rideSharing/common/outCodes'
+import { html } from 'hono/html'
+
 
 
 export type Bindings = {
@@ -21,6 +24,7 @@ export type Bindings = {
 const app = new Hono<{ Bindings: Bindings }>();
 app.route('/api', uberController);
 app.route('/api', boltController);
+app.route('/client', clientController);
 
 console.log('Hono running');
 
@@ -35,9 +39,9 @@ app.get('/var', async (c) => {
   //  console.log(set);
   const key = new Date().toISOString()
   console.log(key);
-  
-  
-  return c.json({ "env.(c)": some, "Binding c.env": ENV, KV:key })
+
+
+  return c.json({ "env.(c)": some, "Binding c.env": ENV, KV: key })
 })
 
 
@@ -67,7 +71,7 @@ app.post('/test',
   // Validation middleware, if not valid sends 404 Bad Request
   zValidator('json', z.array(z.record(z.string()))),
   // Automatically doesn't cache if there was an error (with status code)
-  
+
   async (c) => {
     // Ensure that `req.valid` correctly reflects the expected type
     const validated = c.req.valid('json');
@@ -106,13 +110,5 @@ export default app
 // TODO: Need to validate the data contains useful information before making COSTING API CALLS
 //  TODO: check away and holiday,
 
-// TODO: create routes for different types or formats of request
-// ocr and screen grab
-// TODO : Traffic info , use normal distance matrix and then use that time to compare with v2 matrix - use percentage , maye even compae distance and and show inrease in minites
-// OR use thhe traffic unaware mod to do the computing - traffc aware and model
-// https://developers.google.com/maps/documentation/routes/traffic-model
-// https://developers.google.com/maps/documentation/routes/config_trade_offs
-// https://developers.google.com/maps/documentation/distance-matrix
 
-// Auto detect json format and routing
 

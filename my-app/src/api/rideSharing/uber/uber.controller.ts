@@ -45,6 +45,7 @@ app.post('/uberScore', async (c) => {
   // TODO: Multiple stop trips - use factoring and maybe use the static duration if needed. As you only receive two different addresses and the middle points can be further than last point.
   // Use static 5 min per mile for this. 
   // TODO: Move logic in the service file
+  // TODO: On one occasion tasker data had missing origin (usually comes before miles trip)
   let origin, destination, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate;
   // const { GOOGLE_MAPS_API_KEY } = env<{ GOOGLE_MAPS_API_KEY: string }>(c)
   const GOOGLE_MAPS_API_KEY = c.req.header('key') as string;

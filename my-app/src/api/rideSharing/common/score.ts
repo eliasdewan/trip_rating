@@ -39,7 +39,7 @@ export function calculateScore(
   pickupTimeEstimate: number
 ): CalculatedDataType | any {
 
-  const miles_to_km: number = 1.609344;
+  const miles_to_km: number = 1.609;
   // Set desired score for 100
   const desiredHourlyRate = 40;
   const desiredPayPerMile = 2;
@@ -116,44 +116,38 @@ export function calculateScore(
     }
 
 
-
-
-    // Discrepancies - when the driverAppDistance distance significantly lower than calculated
-    // Tell you how accurately you are predicting (how many less miles used when routing when negative)
-    // You want this number in the positive telling you the google routing is giving over estimated miles
+    /*Discrepancies - when the driverAppDistance distance significantly lower than calculated
+    * Tell you how accurately you are predicting (how many less miles used when routing when negative)
+    * You want this number in the positive telling you the google routing is giving over estimated miles
+    */
     calculatedData.distanceDifference = routeMiles - driverAppDistance;
     calculatedData.distanceDifference = parseFloat(calculatedData.distanceDifference.toFixed(2));;
 
-    // Similarly you want the distance difference factor to be > 1 . Over estimation means reality is the return is more than the effort
-    calculatedData.distanceDifferenceFactor = routeMiles / driverAppDistance;
-    calculatedData.distanceDifferenceFactor = parseFloat(calculatedData.distanceDifferenceFactor.toFixed(1));
+    // When guess route is calculated, there is no distance difference, and when bolt didn't provide distance 
+    if (calculatedData.distanceDifference === 0 || pay === driverAppDistance) {
+      console.log("factoring to zero");
+      // set factor to 0
+      calculatedData.distanceDifferenceFactor = 0;
+      calculatedData.factoredData = { miles: 0, timeMinutes: 0, pricePerHour: 0, pricePerMile: 0 };
+    } else {
+      // Similarly you want the distance difference factor to be > 1 . Over estimation means reality is the return is more than the effort
+      calculatedData.distanceDifferenceFactor = routeMiles / driverAppDistance;
+      calculatedData.distanceDifferenceFactor = parseFloat(calculatedData.distanceDifferenceFactor.toFixed(1));
+      calculatedData.factoredData = {} as CalculatedDataType;
+      // Effort
+      calculatedData.factoredData.miles = parseFloat((routeMiles / calculatedData.distanceDifferenceFactor + +pickupDistance).toFixed(2));
+      calculatedData.factoredData.timeMinutes = parseFloat((routeTimeMinutes / calculatedData.distanceDifferenceFactor + pickupTimeEstimate).toFixed(0));
+      // Return
+      calculatedData.factoredData.pricePerHour = parseFloat((pay / (calculatedData.factoredData.timeMinutes / 60)).toFixed(2));
+      calculatedData.factoredData.pricePerMile = parseFloat((pay / calculatedData.factoredData.miles).toFixed(2));
+    }
 
-    calculatedData.factoredData = {} as CalculatedDataType;
-    // Effort
-    calculatedData.factoredData.miles = parseFloat((routeMiles / calculatedData.distanceDifferenceFactor + +pickupDistance).toFixed(2));
-    calculatedData.factoredData.timeMinutes = parseFloat((routeTimeMinutes / calculatedData.distanceDifferenceFactor + pickupTimeEstimate).toFixed(0));
-    // Return
-    calculatedData.factoredData.pricePerHour = parseFloat((pay / (calculatedData.factoredData.timeMinutes / 60)).toFixed(2));
-    calculatedData.factoredData.pricePerMile = parseFloat((pay / calculatedData.factoredData.miles).toFixed(2));
+
+
 
     if (calculatedData.distanceDifferenceFactor > 1.05 || calculatedData.distanceDifferenceFactor < 0.95) {
       // FIXME: Possible under estimation in traffic condition when longer journey is quicker but driverAppDistance is showing shorter distance in miles. Use factoring only smaller journeys
     }
-    /** 
-
-    // TODO: Check distance difference and make traffic unaware google maps api call to see if the route distance matches with the given uberDistance
-    let googleDistanceMiles = googleJsonData[0].distanceMeters / 1.609;
-    let combinedGivenDistanceMiles = driverAppDistance + pickupDistance;
-    let estimateFactor = googleDistanceMiles / combinedGivenDistanceMiles;
-    if (estimateFactor > 1.05) {
-      // over estimating (could be diversion due to traffic). Need to check with google estimate with traffic unaware.
-    } else if (estimateFactor < 0.95) {
-      // under estimating (could be short journey, just crossing one district or driverApp not taking some road closure into account)
-      // may need to consider traffic conditions
-    }
-*/
-
-
 
     return calculatedData as CalculatedDataType;
   }

@@ -58,6 +58,8 @@ app.post('/uberScore', async (c) => {
 
     // Store the request in database
     await c.env.TRIP_LOG.put(`${new Date().toISOString()} uberScore:Request`, JSON.stringify(uberJsonData));
+    await c.env.TRIPLOG.prepare('INSERT INTO successlogs (entry,data) VALUES (?,?)').bind(`${new Date().toISOString()} uberScore:Request`, JSON.stringify(uberJsonData)).run();
+
 
     // 2. Extract data from the request data
     ({ origin, destination, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate } = extractData(uberJsonData));
@@ -88,6 +90,8 @@ app.post('/uberScore', async (c) => {
 
     const successResponse = { ...ratingResult, destinationInfoString, scoreParameters: { googleJsonData, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate }, googleApiParameters: { origin, destination, key: "secretKey" } };
     await c.env.TRIP_LOG.put(`${new Date().toISOString()} uberScore:SuccessResponse}`, JSON.stringify(successResponse));
+    await c.env.TRIPLOG.prepare('INSERT INTO successlogs (entry,data) VALUES (?,?)').bind(`${new Date().toISOString()} uberScore:SuccessResponse}`, JSON.stringify(successResponse)).run();
+
     return c.json(successResponse);
 
   } catch (error) {
@@ -95,6 +99,8 @@ app.post('/uberScore', async (c) => {
     console.error('Error running score api:', error);
     const errorResponse = { error: `${error} Failed to fetch Google estimate from google v2 score api `, usedLocation: [origin, destination] };
     await c.env.TRIP_LOG.put(`${new Date().toISOString()} uberScore:ErrorResponse}`, JSON.stringify(errorResponse));
+    await c.env.TRIPLOG.prepare('INSERT INTO successlogs (entry,data) VALUES (?,?)').bind(`${new Date().toISOString()} uberScore:ErrorResponse}`, JSON.stringify(errorResponse)).run();
+
 
     return c.json(errorResponse, 400); // TODO Change to this dynamic routing string
   }

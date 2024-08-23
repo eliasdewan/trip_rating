@@ -18,40 +18,41 @@ export function extractBoltData(boltJsonData: { [key: string]: string }[]): Extr
       const text = boltJsonData[i].text;
       // console.log(text);
 
-
-
-      // Check for the origin string (address) which is before the destination // FIXME: origin tied to destination error with the dot and distance
       if (i > 3 && boltJsonData[i + 3] && boltJsonData[i + 3]?.text.includes('•')) {
         if (boltJsonData[i - 1].text.includes('ft') || boltJsonData[i - 1].text.includes('mi')) {
           extract.origin = text;
         }
       }
-
-      // Check for the distance and destination string (e.g., "UB2 • 2.2 mi" or "UB2 • 404 ft") // FIXME: Destination doesnt always contain the dot and distance, (origin, destination and distance are affected)
       if (i > 4 && boltJsonData[i + 2] && boltJsonData[i + 2]?.text.includes('•')) {
         if (text.includes('•') && text.length > 8) {
           const parts = text.split(' • ');
           extract.destination = parts[0];
           if (parts[1].includes('mi')) {
             extract.distance = parseFloat(parts[1].replace(' mi', ''));
+
+            
           } else if (parts[1].includes('ft')) {
             const feet = parseFloat(parts[1].replace(' ft', ''));
             extract.distance = (feet / 5280); // Convert feet to miles and fix to 2 decimal places
+
+
           }
         } else {
           extract.destination = text;
           extract.distance = 0.404;
+          
+
         }
-        extract.destination = extract.destination.concat(" UK"); // TODO: Mitigation for when the postcode like N5 and used in uk
+        extract.destination = extract.destination.concat(" UK"); //  Mitigation for when the postcode like N5 and used in uk
       }
-
-
 
       // Check for the pay string (e.g., "£5.59 · Net")
       if (text.includes('£') && text.includes('· Net')) {
         extract.pay = Number(text.split(' ')[0].replace('£', ''));
         if (extract.distance === 0.404) {
           extract.distance = extract.pay;
+      // FIXME: Adapt in score, so this distance could be ignored
+
         }
       }
 

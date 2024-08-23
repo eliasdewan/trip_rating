@@ -64,8 +64,7 @@ app.get('/', async (c) => {
     console.log(e);
 
   }
-  return c.html(
-    `<!doctype html>
+  const htmlString = `<!doctype html>
     <head>
     <title>Trip Log</title>
     <style>
@@ -73,7 +72,7 @@ app.get('/', async (c) => {
         font-size: 16px;
         line-height: 1.625;
         color: #2020131;
-        font-family: Nunito, sans-serif;
+        font-family: system-ui, sans-serif;
       }
     </style>
   </head>
@@ -93,7 +92,14 @@ app.get('/', async (c) => {
 </form>
 <p> You're searching ${searchDate}</p>
 <div>${htmlList}</div>
-</body>`
-  )
+</body>`;
+  return c.html(htmlString);
+})
+
+
+app.get('/sql', async c => {
+  const { results } = await c.env.TRIPLOG.prepare('SELECT * FROM successlogs ORDER BY (id) DESC limit 10').all();
+
+  return c.json(results);
 })
 export default app;

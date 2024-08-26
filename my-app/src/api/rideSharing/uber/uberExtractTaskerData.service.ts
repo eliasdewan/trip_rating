@@ -6,15 +6,17 @@ const decimalRegex = /\d+\.\d+/
 type cleanExtractedUberData = {
   awayIndex: number,
   away: string,
-  holidayPayIndex: number,
-  holidayPayString: string,
-  awayHolidayPass: boolean,
+  payStructureIndex: number, // holiday pay or reservation fee
+  payStructureString: string,
+  payStructureIndexPass: boolean,
+
+  reservation: boolean;
 
   pickupDistance: number,
   pickupTimeEstimate: number,
 
   multipleStops: boolean,
-  
+
   regFindAddressArrayPass: boolean,
   regFindAddresses: string[],
 
@@ -30,7 +32,7 @@ type cleanExtractedUberData = {
   customerRatingPass: boolean
 
 
-  calculatedPay: number, // Pay with holiday
+  calculatedPay: number, // Pay with holiday or reservation fee
   calculatedPayPass: boolean,
 
   pay: number,
@@ -47,12 +49,20 @@ export default function uberExtractData(jsonData: any) {
   let status: Partial<cleanExtractedUberData> = {};
 
   // Holiday pay and away index [-- finding with words (holiday and away) --]
-  let holidayPayIndex: number = textList.findIndex(line => line.includes("holiday pay"))
-  let awayIndex: number = textList.findIndex(line => line.includes("away"))
+  let payStructureIndex: number = textList.findIndex(line => line.includes("holiday pay"));
 
-  status.awayHolidayPass = awayIndex - holidayPayIndex === 1 ? true : false // checking the order is right
-  status.holidayPayIndex = holidayPayIndex;
-  status.holidayPayString = textList[holidayPayIndex];
+  if (payStructureIndex === -1) {
+    payStructureIndex = textList.findIndex(line => line.includes("reservation"));
+    status.reservation = true;
+  }
+  // Reservation scenario
+  let awayIndex: number = textList.findIndex(line => line.includes("away"));
+
+
+
+  status.payStructureIndexPass = awayIndex - payStructureIndex === 1 ? true : false // checking the order is right
+  status.payStructureIndex = payStructureIndex;
+  status.payStructureString = textList[payStructureIndex];
   status.awayIndex = awayIndex;
   status.away = textList[awayIndex];
 
@@ -80,7 +90,8 @@ export default function uberExtractData(jsonData: any) {
   }
 
   // Trip length finding with string [-- mi trip --]
-  let tripLengthIndex = textList.findIndex(line => line.includes("mi trip"))
+  let tripLengthIndex = textList.findIndex(line => line.includes("mi trip") || line.includes("mi) trip"))
+
   //console.log(textList[tripLengthIndex])
   status.tripLengthPass = tripLengthIndex - awayIndex === 2 ? true : false // checking the order is right
   status.tripLengthIndex = tripLengthIndex;
@@ -88,27 +99,35 @@ export default function uberExtractData(jsonData: any) {
 
 
   // Pay find finding with string pound sign next to holiday pay[-- £ --]
-  let payIndex = textList[holidayPayIndex - 2].includes("£") ? holidayPayIndex - 2 : 0;
+
+
+  let payIndex = textList[payStructureIndex - 2].includes("£") ? payStructureIndex - 2 : 0;
+
   let pay = textList[payIndex];
   //console.log(textList[payIndex]);
   status.payPass = tripLengthIndex - awayIndex === 2 ? true : false; // checking the order is right
   status.pay = Number(pay.replace("£", ""));
 
-  // Pay alternative from holiday calculating with regex and sum of holiday pay and normal pay
-  const numbers = textList[holidayPayIndex].match(/[\d.]+/g).map(Number).filter(i => i > 0);
-  let payWithHoliday = numbers.reduce((sum, num) => sum + num, 0);
-  //console.log(payWithHoliday, "pay with holiday", numbers, textList[holidayPayIndex]);
-  status.calculatedPayPass = payWithHoliday > 0 ? true : false // checking the order is right
-  status.calculatedPay = payWithHoliday;
+  const payStructureNumbers = textList[payStructureIndex].match(/[\d.]+/g).map(Number).filter(i => i > 0);
+  if (status.reservation) {
+    status.calculatedPayPass = false;
+    status.calculatedPay = status.pay;
+  } else {
+    // Pay alternative from holiday calculating with regex and sum of holiday pay and normal pay
+    let payWithHoliday = payStructureNumbers.reduce((sum, num) => sum + num, 0);
+    //console.log(payWithHoliday, "pay with holiday", numbers, textList[holidayPayIndex]);
+    status.calculatedPayPass = payWithHoliday > 0 ? true : false // checking the order is right
+    status.calculatedPay = payWithHoliday;
 
+  }
   // Customer rating finding next to holiday pay [-- 0 to 5 rating --]
-  let customerRating: number = Number(textList[holidayPayIndex - 1]);
+  let customerRating: number = Number(textList[payStructureIndex - 1]);
   // console.log(customerRating);
   status.customerRating = Number(customerRating);
   status.customerRatingPass = customerRating > 0 && customerRating <= 5 ? true : false // cheecking the order is right
 
 
-  //console.log(status);
+  console.log(status, "++++++++++++++");
   return status;
 }
 

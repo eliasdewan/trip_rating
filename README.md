@@ -3,7 +3,7 @@
 ## Overview
 This project aims to provide an accurate trip rating for ridesharing drivers. By leveraging Google Maps' modern routing capabilities, it offers real-time traffic conditions and precise journey estimates. 
 
-This helps drivers make informed decisions about accepting or rejecting trips or youre in a blind queue with no time estimate.
+This helps me make informed decisions about accepting or rejecting trips If youre brave you can deploy it your self on your account, you will need to also initialize d1 database and kv possibly and configure in `wrangler.toml` file. And then there is a lot of work to do to setup and configure tasker app on android to send the request and show the response.
 ## Sample Preview
 <p align="center">
 <img src="assets/uberSample.jpg" width="200" alt="uberSample"/>

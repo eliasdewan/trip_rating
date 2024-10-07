@@ -1,22 +1,27 @@
 import { googleRouteResponse } from '../../../googleMapsCalls/googleDistanceV2';
 export interface CalculatedDataType {
+  time: String; // TODO:
+  timeSummary: String;
   pay: number;
   routing: String;
   miles: number;
   timeMinutes: number;
   pricePerMile: number;
   pricePerHour: number;
+  expectedArrival: string;
   perMileRating: number;
   perHourRating: number;
   passengerRating: number;
   distanceDifference: number;
   distanceDifferenceFactor: number;
   trafficIntensity: number;
+  outsideOperatingArea: boolean; // TODO: if destination is outside the operating area where you can not get trip requests - maybe use distance.
   factoredData: {
     miles: number,
     timeMinutes: number;
     pricePerMile: number;
     pricePerHour: number;
+    expectedArrival: string; // TODO:
   }
 }
 
@@ -115,6 +120,11 @@ export function calculateScore(
       calculatedData.trafficIntensity = parseFloat((actualDuration / staticDuration).toFixed(1))
     }
 
+    //⌚
+    const currentTime = new Date();
+    calculatedData.time = currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const pickupTime = currentTime.getTime() + pickupTimeEstimate * 60 * 1000;
+    const dropOffTime = currentTime.getTime() + calculatedData.timeMinutes * 60 * 1000;
 
     /*Discrepancies - when the driverAppDistance distance significantly lower than calculated
     * Tell you how accurately you are predicting (how many less miles used when routing when negative)
@@ -128,7 +138,8 @@ export function calculateScore(
       console.log("factoring to zero");
       // set factor to 0
       calculatedData.distanceDifferenceFactor = 0;
-      calculatedData.factoredData = { miles: 0, timeMinutes: 0, pricePerHour: 0, pricePerMile: 0 };
+      calculatedData.factoredData = { miles: 0, timeMinutes: 0, pricePerHour: 0, pricePerMile: 0, expectedArrival: new Date(dropOffTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }; // TODO: some alternative to the this, use outcode to search location and use that
+      calculatedData.timeSummary =`${calculatedData.time} (${new Date(pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} pickup) ${calculatedData.factoredData.expectedArrival}`;
     } else {
       // Similarly you want the distance difference factor to be > 1 . Over estimation means reality is the return is more than the effort
       calculatedData.distanceDifferenceFactor = routeMiles / driverAppDistance;
@@ -140,14 +151,11 @@ export function calculateScore(
       // Return
       calculatedData.factoredData.pricePerHour = parseFloat((pay / (calculatedData.factoredData.timeMinutes / 60)).toFixed(2));
       calculatedData.factoredData.pricePerMile = parseFloat((pay / calculatedData.factoredData.miles).toFixed(2));
-    }
-
-
-
-
-    if (calculatedData.distanceDifferenceFactor > 1.05 || calculatedData.distanceDifferenceFactor < 0.95) {
-      // FIXME: Possible under estimation in traffic condition when longer journey is quicker but driverAppDistance is showing shorter distance in miles. Use factoring only smaller journeys
-    }
+      //⌚ Factored
+      const dropOffTimeFactored = currentTime.getTime() + calculatedData.factoredData.timeMinutes * 60 * 1000;
+      calculatedData.factoredData.expectedArrival = new Date(dropOffTimeFactored).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      calculatedData.timeSummary =`${calculatedData.time} (${new Date(pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} pickup) ${calculatedData.factoredData.expectedArrival}`;
+          };
 
     return calculatedData as CalculatedDataType;
   }

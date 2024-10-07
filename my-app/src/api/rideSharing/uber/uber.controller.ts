@@ -6,7 +6,7 @@ import { GoogleMapsSimpleDistanceMatrixReturn, fetchGoogleMapsData } from '../..
 import { computeRouteMatrixV2, computeRoutesV2, googleMatrixResponse as googleMatrixResponse, googleRouteResponse as googleRouteResponse } from '../../../googleMapsCalls/googleDistanceV2'
 import { googleMockDistanceMatrixCall, googleMockDistanceRouteCall } from '../../../googleMapsCalls/staticGooglemockDistance';
 import { Bindings } from '../../..';
-import { getOutcodeDataString } from '../common/outCodes';
+import { getOutcodeArea, getOutcodeDataString } from '../common/outCodes';
 
 const app = new Hono<{ Bindings: Bindings }>()
 
@@ -71,18 +71,19 @@ app.post('/uberScore', async (c) => {
     // If origin and destination are same, don't call google api, for uber 
     // There can be same outcode but different location. (UB2, Southall and UB2, London or UB2, Southall and UB2 Norwood Green)
     if (origin === destination) {
-      // googleJsonData = googleMockDistanceMatrixCall(driverAppDistance, pickupDistance, pickupTimeEstimate) as googleMatrixResponse;
-      googleJsonData = googleMockDistanceRouteCall(driverAppDistance, pickupDistance, pickupTimeEstimate) as googleRouteResponse;
-      destination = "Same as origin " + destination;
-    } else {
-      googleJsonData = await computeRoutesV2(origin, destination, GOOGLE_MAPS_API_KEY) as googleRouteResponse;
-      // TODO : there could be other cases where the route did not work anything, using static when there is no distance
-      if (!googleJsonData.routes[0].distanceMeters) {
-        console.log("Found no distance from google maps, possibly same origin and destination");
-        googleJsonData = googleMockDistanceRouteCall(driverAppDistance, pickupDistance, pickupTimeEstimate) as googleRouteResponse;
-        destination = "Same as origin " + destination;
+      const destinationArea = getOutcodeArea(destination);
+      if (destinationArea) {
+        destination = destinationArea;
       }
     }
+    googleJsonData = await computeRoutesV2(origin, destination, GOOGLE_MAPS_API_KEY) as googleRouteResponse;
+    // TODO : there could be other cases where the route did not work anything, using static when there is no distance
+    if (!googleJsonData.routes[0].distanceMeters) {
+      console.log("Found no distance from google maps, possibly same origin and destination");
+      googleJsonData = googleMockDistanceRouteCall(driverAppDistance, pickupDistance, pickupTimeEstimate) as googleRouteResponse;
+      destination = "Same as origin " + destination;
+    }
+
 
     // 4. Calculate the result for desired output
     const ratingResult = calculateScore(googleJsonData, +passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate);

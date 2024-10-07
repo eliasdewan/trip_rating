@@ -15,6 +15,13 @@ const getOutcode = (text: string) => { const outcodeMatch = text.match(outcodeRe
 const getSubOtcode = (text: string) => { const subOutcodeMatch = getOutcode(text).match(subOutcodeRegex); return subOutcodeMatch ? subOutcodeMatch[1] : "" }
 const getPostalCode = (text: string) => { const postalCodeMatch = getOutcode(text).match(postalAreaRegex); return postalCodeMatch ? postalCodeMatch[1] : ""; }
 
+export function getOutcodeArea(outCodeString: string) {
+  const result = getOutcodeData(outCodeString)
+  if (typeof (result) === "string") {
+    return null;
+  } else return result.localityName;
+}
+
 export function getOutcodeDataString(outCodeString: string) {
   const result = getOutcodeData(outCodeString)
   if (typeof (result) === "string") {

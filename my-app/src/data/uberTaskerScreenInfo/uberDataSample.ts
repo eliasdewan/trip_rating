@@ -67,3 +67,15 @@ export const dummyJsonData = [
   { "text": "E14, London" },      // 27
   { "text": "Long trip (60+ min)" },
   { "text": "Confirm" }]
+
+const strangeUberFormat = [
+  {"text": "UberX"},
+  {"text": "£56.20"},
+  {"text": "5.00"},
+  {"text": "£51.58 + est. holiday pay of £4.62"},
+  {"text": "1 min (0.1 mi) away"},
+  {"text": "40.5 mi trip"}, // Instead of origin , its just destination // FIXME: solution to no origin
+  {"text": "AL7, Welwyn Garden City"},
+  {"text": "Long trip (60+ min)"},
+  {"text": "Confirm"}
+]

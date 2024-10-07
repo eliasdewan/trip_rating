@@ -22,6 +22,7 @@ type cleanExtractedUberData = {
 
   indexedAddressPass: boolean,
   indexedAddress: string[],
+  noOrigin: boolean,
 
 
   tripLengthPass: boolean,
@@ -59,7 +60,6 @@ export default function uberExtractData(jsonData: any) {
   let awayIndex: number = textList.findIndex(line => line.includes("away"));
 
 
-
   status.payStructureIndexPass = awayIndex - payStructureIndex === 1 ? true : false // checking the order is right
   status.payStructureIndex = payStructureIndex;
   status.payStructureString = textList[payStructureIndex];
@@ -72,22 +72,13 @@ export default function uberExtractData(jsonData: any) {
   status.pickupDistance = pickupDistance;
   status.pickupTimeEstimate = pickupTimeEstimate;
 
+  // TODO: uber could have only one address or no origin, only destination.
+
   // Address array finding with regex match [-- string comma string --]
   // most likely not safe !!! it will fail if there is more than 2
   let regFindAddresses = textList.filter(i => i.match(stringCommaString))
   status.regFindAddressArrayPass = regFindAddresses.length === 2 ? true : false // checking the order is right
   status.regFindAddresses = regFindAddresses;
-
-  //Address index based extraction
-  let indexedAddress = [textList[awayIndex + 1], textList[awayIndex + 3]]
-  status.indexedAddressPass = indexedAddress.length === 2 ? true : false // checking the order is right
-  status.indexedAddress = indexedAddress;
-
-  // Multiple Stops - if multiple stops are found, consider adding static duration
-  status.multipleStops = false;
-  if (textList.find(text => text.includes('Multiple stops'))) {
-    status.multipleStops = true;
-  }
 
   // Trip length finding with string [-- mi trip --]
   let tripLengthIndex = textList.findIndex(line => line.includes("mi trip") || line.includes("mi) trip"))
@@ -97,6 +88,32 @@ export default function uberExtractData(jsonData: any) {
   status.tripLengthIndex = tripLengthIndex;
   status.tripLength = Number(decimalRegex.exec(textList[tripLengthIndex])?.find(Number));
 
+  //Address index based extraction TODO: data can have address origin specific on the next line after outcode, in plcae of diatance
+  let indexedAddress: string[] = [];
+  // Extra precise origin
+  if (textList[awayIndex + 3].includes("mi trip")) {
+    indexedAddress.push(textList[awayIndex + 2] + ", " + textList[awayIndex + 1]);
+    indexedAddress.push(textList[awayIndex + 4]);
+  } 
+  // No origin provided
+  else if (textList[awayIndex + 1].includes("mi trip")) {
+    status.noOrigin = true;
+    indexedAddress = ["London", textList[awayIndex + 2]];
+  } else {
+    indexedAddress = [textList[awayIndex + 1], textList[awayIndex + 3]];
+  }
+
+  // No origin given
+
+
+  status.indexedAddressPass = indexedAddress.length === 2 ? true : false // checking the order is right
+  status.indexedAddress = indexedAddress;
+
+  // Multiple Stops - if multiple stops are found, consider adding static duration
+  status.multipleStops = false;
+  if (textList.find(text => text.includes('Multiple stops'))) {
+    status.multipleStops = true;
+  }
 
   // Pay find finding with string pound sign next to holiday pay[-- £ --]
 

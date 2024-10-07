@@ -1,0 +1,52 @@
+{
+  "Request": {
+    "origins": [
+      {
+        "waypoint": {
+          "address": "w12 UK"
+        },
+        "routeModifiers": {
+          "avoid_ferries": true
+        }
+      }
+    ],
+    "destinations": [
+      {
+        "waypoint": {
+          "address": "e15 UK"
+        }
+      }
+    ],
+    "travelMode": "DRIVE",
+    "routingPreference": "TRAFFIC_AWARE_OPTIMAL",
+    "units": "IMPERIAL"
+  },
+  "Header": {
+    "Content-Type": "application/json",
+    "X-Goog-FieldMask": "originIndex,destinationIndex,duration,distanceMeters,status,condition,staticDuration,travelAdvisory,localizedValues,fallbackInfo",
+    "X-Goog-Api-Key": "key"
+  },
+  "Response": [
+    {
+      "originIndex": 0,
+      "destinationIndex": 0,
+      "status": {},
+      "distanceMeters": 23390,
+      "duration": "5494s",
+      "staticDuration": "4107s",
+      "travelAdvisory": {},
+      "condition": "ROUTE_EXISTS",
+      "localizedValues": {
+        "distance": {
+          "text": "14.5 mi"
+        },
+        "duration": {
+          "text": "1 hour 32 mins"
+        },
+        "staticDuration": {
+          "text": "1 hour 8 mins"
+        }
+      }
+    }
+  ]
+}

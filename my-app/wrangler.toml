@@ -5,18 +5,24 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 # MY_VAR = "my-variable"
 
-# [[kv_namespaces]]
-# binding = "MY_KV_NAMESPACE"
-# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+[[kv_namespaces]]
+binding = "TRIP_LOG"
+id = "8298771ff8374e31ac51e235b3d42d65"
+preview_id = "705f3cfd6253433dabaca0cbd481cd35"
 
 # [[r2_buckets]]
 # binding = "MY_BUCKET"
 # bucket_name = "my-bucket"
 
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "my-database"
-# database_id = ""
+[[d1_databases]]
+binding = "DATA_DRIVEN"
+database_name = "data-driven"
+database_id = "d3ae7c34-01dc-4650-a28e-7bc441ce3035"
+
+[[d1_databases]]
+binding = "TRIPLOG"
+database_name = "triplog"
+database_id = "3fc63280-2b7b-4e88-949c-658b1c03e474"
 
 # [ai]
 # binding = "AI"

@@ -1,4 +1,25 @@
-// npm install node-fetch
+// This google maps api is not good, it is an older version that is billed at the same amount almost.
+export type GoogleMapsSimpleDistanceMatrixReturn =
+  {
+    destination_addresses: string[],
+    origin_addresses: string[],
+    rows:
+    {
+      elements:
+      {
+        distance: {
+          text: string,
+          value: number
+        },
+        duration: {
+          text: string,
+          value: number
+        },
+        status: string,
+      }[],
+    }[],
+    status: string,
+  }
 
 export async function fetchGoogleMapsData(origin: string, destination: string, call: boolean = true, key: string, traffic_model = "best_guess") {
   console.log(origin, destination)

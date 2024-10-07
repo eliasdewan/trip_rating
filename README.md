@@ -1,9 +1,9 @@
-# Trip Rating for Ridesharing App
-
+# Trip Rating for Ridesharing Apps - Uber Driver and Bolt Driver
+### Before you read on I would like to say that I use the solution everyday, it is not a play project and it is deplyed on cloudfare for me, and on all trip requests I attemt to use this. It is like checking the weather or better. It completly eliminates a point of uncertainty of doing work as a private hire driver. Recently I have seen something that you could relate to, imagine your flight status just delayed vs delayed with an updated time. Or youre in a queue without a time when you can reach the front.
 ## Overview
 This project aims to provide an accurate trip rating for ridesharing drivers. By leveraging Google Maps' modern routing capabilities, it offers real-time traffic conditions and precise journey estimates. 
 
-This helps drivers make informed decisions about accepting or rejecting trips.
+This helps drivers make informed decisions about accepting or rejecting trips or youre in a blind queue with no time estimate.
 ## Sample Preview
 <p align="center">
 <img src="assets/uberSample.jpg" width="200" alt="uberSample"/>

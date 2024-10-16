@@ -63,7 +63,7 @@ app.post('/uberScore', async (c) => {
 
     // 2. Extract data from the request data
     ({ origin, destination, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate } = extractData(uberJsonData));
-    const destinationInfoString = getOutcodeDataString(destination as string);
+    const destinationInfoString = getOutcodeDataString(origin as string, destination as string);
 
     // 3. Get data from google maps api or use static 
     let googleJsonData;

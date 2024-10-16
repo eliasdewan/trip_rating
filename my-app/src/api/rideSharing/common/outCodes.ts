@@ -3,9 +3,16 @@ import { DetailedOutcode, aroundLondonOutcodes, multiCentralLondonOutcodes } fro
 import { postCodelocality, DetailedPostalCode } from '../../../data/location/postCodeArea';
 
 // const outcodeRegex = /^([A-Z]{1,2}\d{1,2}[A-Z]?)/ // checks for outcode and grabs from string (outcode and subOutcodes)
-const outcodeRegex = /^([A-Z]{1,2}\d{1,2}[A-Z]?)\b(?=[^,]*,?)/ //STRONG checks for outcode and grabs from string (outcode and subOutcodes)
-const subOutcodeRegex = /^([A-Z]{1,2}\d)[A-Z]$\b/ // grabs outcode from suboutcode
-const postalAreaRegex = /^([A-Z]{1,2})\d{1,2}$/ // Grabs the postal area from outcode, no multicode
+// const outcodeRegex = /^([A-Z]{1,2}\d{1,2}[A-Z]?)\b(?=[^,]*,?)/ //STRONG checks for outcode and grabs from string (outcode and subOutcodes)
+// const subOutcodeRegex = /^([A-Z]{1,2}\d)[A-Z]$\b/ // grabs outcode from suboutcode
+// const postalAreaRegex = /^([A-Z]{1,2})\d{1,2}$/ // Grabs the postal area from outcode, no multicode
+
+const outcodeRegex = /([A-Z]{1,2}\d{1,2}[A-Z]?)\s*/;
+const subOutcodeRegex = /^([A-Z]{1,2}\d{1,2})$/;
+const postalAreaRegex = /^([A-Z]{1,2})/;
+
+
+
 
 const checkOutcode = (text: string) => text.match(outcodeRegex);
 const testOutcodei = (text: string) => outcodeRegex.test(text);
@@ -22,14 +29,36 @@ export function getOutcodeArea(outCodeString: string) {
   } else return result.localityName;
 }
 
-export function getOutcodeDataString(outCodeString: string) {
-  const result = getOutcodeData(outCodeString)
-  if (typeof (result) === "string") {
-    return result;
-  } else if ("TFLZone" in result) {
-    return `Zone ${result.TFLZone} ${result.distanceFromLondon}m ${result.directionFromLondon} from London, ${result.localityName} ${result.areaName}`
+export function getOutcodeDataString(origin: string, destination: string) {
+  const originResult = getOutcodeData(origin);
+  const destinationResult = getOutcodeData(destination);
+  
+  
+
+  // For creating string about increasing or decreasing distance from london
+  let inOutString = "";
+  if (typeof (originResult) != "string" && typeof (destinationResult) != "string") {
+    
+    // Measure negative or positive from London
+    let inOutMiles = originResult.distanceFromLondon - destinationResult.distanceFromLondon;
+    
+    // Use measurement to state if going inward or outward 
+    if (inOutMiles >= 0){
+      inOutString = `IN ${Math.abs(inOutMiles)}`
+    } else {
+      inOutString = `OUT ${Math.abs(inOutMiles)}`
+    }
   }
-  else return `LONG ${result.distanceFromLondon}m ${result.directionFromLondon} from London, ${result.localityName}`
+
+  
+
+  if (typeof (destinationResult) === "string") {
+    return destinationResult;
+  } else if ("TFLZone" in destinationResult) {
+ // commenting out the from london after direction from london
+    return `${inOutString} | Zone ${destinationResult.TFLZone} (${destinationResult.distanceFromLondon}m ${destinationResult.directionFromLondon}) ${destinationResult.localityName} ${destinationResult.areaName}`
+  }
+  else return `${inOutString} | LONG (${destinationResult.distanceFromLondon}m ${destinationResult.directionFromLondon}) ${destinationResult.localityName}`
 }
 
 export function getOutcodeData(destinationString: string) {

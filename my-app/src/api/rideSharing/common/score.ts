@@ -122,7 +122,7 @@ export function calculateScore(
 
     //⌚
     const currentTime = new Date();
-    calculatedData.time = currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    calculatedData.time = currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
     const pickupTime = currentTime.getTime() + pickupTimeEstimate * 60 * 1000;
     const dropOffTime = currentTime.getTime() + calculatedData.timeMinutes * 60 * 1000;
 
@@ -138,8 +138,8 @@ export function calculateScore(
       console.log("factoring to zero");
       // set factor to 0
       calculatedData.distanceDifferenceFactor = 0;
-      calculatedData.factoredData = { miles: 0, timeMinutes: 0, pricePerHour: 0, pricePerMile: 0, expectedArrival: new Date(dropOffTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }; // TODO: some alternative to the this, use outcode to search location and use that
-      calculatedData.timeSummary =`${calculatedData.time} (${new Date(pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} pickup) ${calculatedData.factoredData.expectedArrival}`;
+      calculatedData.factoredData = { miles: 0, timeMinutes: 0, pricePerHour: 0, pricePerMile: 0, expectedArrival: new Date(dropOffTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }) }; // TODO: some alternative to the this, use outcode to search location and use that
+      calculatedData.timeSummary =`${calculatedData.time} (${new Date(pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })} pickup) ${calculatedData.factoredData.expectedArrival}`;
     } else {
       // Similarly you want the distance difference factor to be > 1 . Over estimation means reality is the return is more than the effort
       calculatedData.distanceDifferenceFactor = routeMiles / driverAppDistance;
@@ -153,8 +153,8 @@ export function calculateScore(
       calculatedData.factoredData.pricePerMile = parseFloat((pay / calculatedData.factoredData.miles).toFixed(2));
       //⌚ Factored
       const dropOffTimeFactored = currentTime.getTime() + calculatedData.factoredData.timeMinutes * 60 * 1000;
-      calculatedData.factoredData.expectedArrival = new Date(dropOffTimeFactored).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      calculatedData.timeSummary =`${calculatedData.time} (${new Date(pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} pickup) ${calculatedData.factoredData.expectedArrival}`;
+      calculatedData.factoredData.expectedArrival = new Date(dropOffTimeFactored).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })
+      calculatedData.timeSummary =`${calculatedData.time} (${new Date(pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })} pickup) ${calculatedData.factoredData.expectedArrival}`;
           };
 
     return calculatedData as CalculatedDataType;

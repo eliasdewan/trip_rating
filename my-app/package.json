@@ -1,7 +1,7 @@
 {
   "name": "my-app",
   "scripts": {
-    "dev": "wrangler dev  src/index.ts",
+    "dev": "wrangler dev src/index.ts",
     "deploy": "wrangler deploy --minify src/index.ts",
     "db": "wrangler d1 list"
   },

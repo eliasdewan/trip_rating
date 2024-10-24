@@ -6,7 +6,7 @@ import { GoogleMapsSimpleDistanceMatrixReturn, fetchGoogleMapsData } from '../..
 import { computeRouteMatrixV2, computeRoutesV2, googleMatrixResponse as googleMatrixResponse, googleRouteResponse as googleRouteResponse } from '../../../googleMapsCalls/googleDistanceV2'
 import { googleMockDistanceMatrixCall, googleMockDistanceRouteCall } from '../../../googleMapsCalls/staticGooglemockDistance';
 import { Bindings } from '../../..';
-import { getOutcodeArea, getOutcodeDataString } from '../common/outCodes';
+import { fixSearchAddress, getOutcodeArea, getOutcodeDataString } from '../common/outCodes';
 
 const app = new Hono<{ Bindings: Bindings }>()
 
@@ -58,7 +58,7 @@ app.post('/uberScore', async (c) => {
 
     // Store the request in database
     await c.env.TRIP_LOG.put(`${new Date().toISOString()} uberScore:Request`, JSON.stringify(uberJsonData));
-    await c.env.TRIPLOG.prepare('INSERT INTO successlogs (entry,data,timestamp) VALUES (?,?,CURRENT_TIMESTAMP)').bind(`${new Date().toISOString()} uberScore:Request`, JSON.stringify(uberJsonData)).run();
+    await c.env.TRIPLOG.prepare('INSERT INTO successlogs (entry,data,timestamp) VALUES (?,?,?)').bind('uberScore:Request', JSON.stringify(uberJsonData), new Date().toISOString()).run();
 
 
     // 2. Extract data from the request data
@@ -70,11 +70,17 @@ app.post('/uberScore', async (c) => {
 
     // If origin and destination are same, don't call google api, for uber 
     // There can be same outcode but different location. (UB2, Southall and UB2, London or UB2, Southall and UB2 Norwood Green)
+    // FIXME: the destination area is not enough to make google maps routing search address
+    
+    // TODO: Move this to services
+    origin = fixSearchAddress(origin);
     if (origin === destination) {
       const destinationArea = getOutcodeArea(destination);
       if (destinationArea) {
         destination = destinationArea;
       }
+    } else {
+      destination = fixSearchAddress(destination);
     }
     googleJsonData = await computeRoutesV2(origin, destination, GOOGLE_MAPS_API_KEY) as googleRouteResponse;
     // TODO : there could be other cases where the route did not work anything, using static when there is no distance
@@ -91,7 +97,7 @@ app.post('/uberScore', async (c) => {
 
     const successResponse = { ...ratingResult, destinationInfoString, scoreParameters: { googleJsonData, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate }, googleApiParameters: { origin, destination, key: "secretKey" } };
     await c.env.TRIP_LOG.put(`${new Date().toISOString()} uberScore:SuccessResponse}`, JSON.stringify(successResponse));
-    await c.env.TRIPLOG.prepare('INSERT INTO successlogs (entry,data,timestamp) VALUES (?,?,CURRENT_TIMESTAMP)').bind(`${new Date().toISOString()} uberScore:SuccessResponse}`, JSON.stringify(successResponse)).run();
+    await c.env.TRIPLOG.prepare('INSERT INTO successlogs (entry,data,timestamp) VALUES (?,?,?)').bind('uberScore:SuccessResponse', JSON.stringify(successResponse), new Date().toISOString()).run();
 
     return c.json(successResponse);
 
@@ -100,7 +106,7 @@ app.post('/uberScore', async (c) => {
     console.error('Error running score api:', error);
     const errorResponse = { error: `${error} Failed to fetch Google estimate from google v2 score api `, usedLocation: [origin, destination] };
     await c.env.TRIP_LOG.put(`${new Date().toISOString()} uberScore:ErrorResponse}`, JSON.stringify(errorResponse));
-    await c.env.TRIPLOG.prepare('INSERT INTO successlogs (entry,data,timestamp) VALUES (?,?,CURRENT_TIMESTAMP)').bind(`${new Date().toISOString()} uberScore:ErrorResponse}`, JSON.stringify(errorResponse)).run();
+    await c.env.TRIPLOG.prepare('INSERT INTO successlogs (entry,data,timestamp) VALUES (?,?,?)').bind('uberScore:ErrorResponse', JSON.stringify(errorResponse), new Date().toISOString()).run();
 
 
     return c.json(errorResponse, 400); // TODO Change to this dynamic routing string

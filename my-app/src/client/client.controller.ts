@@ -127,11 +127,14 @@ app.get('/sql', async c => {
   htmlList = "";
   console.log(searchDate);
 
-  const { results } = await c.env.TRIPLOG.prepare(`SELECT * FROM successlogs WHERE entry LIKE "${searchDate}%" ORDER BY (id) DESC limit ?`).bind(limit).all();
+  const { results } = await c.env.TRIPLOG.prepare(`SELECT * FROM successlogs WHERE DATE(timestamp) = ? ORDER BY (id) DESC limit ?`).bind(searchDate,limit).all();
   // console.log(results);
+  console.log(results);
+  
 
   for (let i in results) {
-    htmlList += `<div><b style="color:blue;">${results[i].entry}:</b>`
+    htmlList += `<div><b style="color:blue;">${results[i].entry}</b>`
+    htmlList += `<div><b style="color:blue;">${results[i].timestamp}</b>`
     // console.log(JSON.parse(results[i].data));
     // Data 
     try { addObject(JSON.parse(results[i].data)); }

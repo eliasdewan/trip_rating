@@ -30,3 +30,30 @@ export function extractData(jsonData: any) {
 
 // TODO: possible solution to same address and first part of the address, get random locations using the distance and approximate, verify they are within locality of the post code,
 // calculate the using distance matrix and match the ones that fit with the given distance.
+
+function spellingCheck(address: string) {
+   const knownMisspellings: { [key: string]: string } = {
+      Harov: "Harrow"
+   }
+   //(SW7, Kensington) also doesn't work use (SW7, London); Fulham; Tottenham
+
+   if (Object.hasOwn(knownMisspellings, address)) {
+      return knownMisspellings[address]
+   }
+
+}
+
+// README: if no outcode or bad match, check with the outcode list and fix missing and misspelling 
+// in in central london outcode list, replace to london
+
+// check location type 
+// add or fix the mistake if its just a little bit
+// get the location lat lng from header
+// No address: Confirm, Match, 5.3 mi trip,Towards your destination,
+// SELECT * FROM successlogs WHERE entry like '%error%'  and data not like '%Harov%' and data not like '%Match%' and data not like '%Confirm%'ORDER BY (id) DESC limit 38json 
+
+
+//All area names with n e s w are london,
+//all other areas are different 
+
+// bolt for using origin use the csv

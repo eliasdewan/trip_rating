@@ -82,9 +82,10 @@ export function getOutcodeData(destinationString: string) {
       return "No postal in data"
     }
 
-  } else if (localitySearch(destinationString)) { 
-  const locality = localitySearch(destinationString);
-  return locality? getOutcodeData(locality.outcode): "No outcode"
+  } else if (localitySearch(destinationString)) {
+    //FIXME: this repeats the locality name if there is only locality name , here or somewhere it does duplicate
+    const locality = localitySearch(destinationString);
+    return locality ? getOutcodeData(locality.outcode) : "No outcode"
 
   } else {
     console.log("no outcode found"); // probably airport or a major area
@@ -115,13 +116,20 @@ export function localitySearch(locality: string) {
 
 }
 
+// Only replaces locality name if outcode in data set, if no outcode, a locality search will check
+// Add more functionality maybe where outcode is added to missing address.
 export function fixSearchAddress(address: string) {
   const localityName = getOutcodeArea(address);
+  console.log(localityName);
+  // FIXME: this in conjunction with no outcode does locality search, the split is the locality and adds locality making  just repeating area name/locality
+  
   if (localityName) {
     return address.split(",")[0] + ", " + localityName;
   }
-  console.log(localityName);
 
+  if (address === localityName) {
+    return address.concat(' uk')
+  }
 
 
   const addressData = getOutcodeData(address);
@@ -130,12 +138,10 @@ export function fixSearchAddress(address: string) {
   }
   console.log(addressData);
 
-
-  // if its in london replace with the the second part with london
-
+  //TODO: if its in london replace with the the second part with london
 
   // if locality data is found means, more data needs be added for search
-  const localityData = localitySearch(address);
+  // const localityData = localitySearch(address); outcode data does this
 
 
   return address.concat(' uk')

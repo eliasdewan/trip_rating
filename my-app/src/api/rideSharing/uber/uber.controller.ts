@@ -71,7 +71,7 @@ app.post('/uberScore', async (c) => {
     // If origin and destination are same, don't call google api, for uber 
     // There can be same outcode but different location. (UB2, Southall and UB2, London or UB2, Southall and UB2 Norwood Green)
     // FIXME: the destination area is not enough to make google maps routing search address
-    
+
     // TODO: Move this to services
     origin = fixSearchAddress(origin);
     if (origin === destination) {

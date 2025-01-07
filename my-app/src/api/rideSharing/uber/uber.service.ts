@@ -5,7 +5,7 @@ import uberExtractData from "./uberExtractTaskerData.service";
 
 
 /*
-Reformat to accept new uber trip request style
+FIXME: Reformat to accept new uber trip request style and in the controller flow for outcode and other things
 { "text": "£10.83 + est. holiday pay of £1.06" }, // SAME
 
 ------------------------------------------
@@ -64,13 +64,15 @@ export function extractData(jsonData: any) {
    const driverAppDistance = cleanDataExtracted.tripLength;
    const pickupDistance = cleanDataExtracted.pickupDistance;
    const pickupTimeEstimate = cleanDataExtracted.pickupTimeEstimate;
+   const uberTripMinutes = cleanDataExtracted.uberTripDurationMinutes;
+   const uberTripDurationArrayHourMinutes = cleanDataExtracted.uberTripDurationArrayHourMinutes;
    const multipleStops = cleanDataExtracted.multipleStops;
 
    // returns string for http request and other
 
-   console.log({ ...locations, passengerRating, pay, pickupDistance, pickupTimeEstimate });
+   console.log({ ...locations, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate, uberTripMinutes, uberTripDurationArrayHourMinutes, multipleStops });
 
-   return { ...locations, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate }
+   return { ...locations, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate, uberTripMinutes, uberTripDurationArrayHourMinutes, multipleStops }
 }
 
 // TODO: possible solution to same address and first part of the address, get random locations using the distance and approximate, verify they are within locality of the post code,

@@ -1,5 +1,50 @@
 import uberExtractData from "./uberExtractTaskerData.service";
 // TODO : format functions into 1 and create function interface or data type for parameter
+
+
+
+
+/*
+Reformat to accept new uber trip request style
+{ "text": "£10.83 + est. holiday pay of £1.06" }, // SAME
+
+------------------------------------------
+      ## Looks the same ##
+
+{ "text": "2 mins (0.2 mi) away" }, OLD
+{ "text": "<1 min (0 mi) away" }, NEW
+{ "text": "2 mins (0.2 mi) away" }, NEW
+  
+------------------------------------------
+      ## More descriptive address, no outcode or postcode, could be direct search ##
+
+{ "text": "UB2, London" }, OLD
+{ "text": "London St. Pancras International / King's Cross Station" }, NEW
+{ "text": "Orange Zone, Short Stay Car Park" }, NEW
+
+-----------------------------------------
+      ## Very similar to pickup with trip instead of away
+         if (hr) then (min) if no (hr) then (mins)
+
+  { "text": "7.0 mi trip" }, OLD
+  { "text": "29 mins  (17.9 mi) trip" }, NEW
+  { "text": "3 hr 47 min  (7.0 mi) trip" }, NEW
+  { "text": "1 hr 5 min  (53.1 mi) trip" }, NEW
+  { "text": "2 hr 21 min  (134.4 mi) trip" }, NEW
+
+-----------------------------------------
+      ## More descriptive address, Does have location or road name, with outcode , or just united kingdom ##
+
+   { "text": "W3, London" }, OLD
+   { "text": "Portsmouth Harbour, United Kingdom" }, NEW
+   { "text": "Bridgewater Rd, Berkhamsted HP4, UK" }, NEW
+
+   
+
+
+
+
+*/
 export function extractData(jsonData: any) {
    const cleanDataExtracted = uberExtractData(jsonData);
    console.log(cleanDataExtracted, "extractData");

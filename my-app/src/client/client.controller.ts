@@ -164,6 +164,11 @@ function addObject(object: { [key: string]: any }) {
     // 8. If the value is not an object just add the key and value
     if (key == "origin" || key == "destination") {
       htmlList += (`<div><b>${key.toUpperCase()}:</b><a href="https://www.google.com/maps/search/?api=1&query=${object[key]}">${object[key]}</a></div>`)
+      //add google maps link navigation url with origin and destination key as they have the address
+      if (key == "destination") {
+        htmlList += (`<div><a href="https://www.google.com/maps/dir/?api=1&origin=${object["origin"]}&destination=${object[key]}">🗺️ Navigate</a></div>`)
+        htmlList += (`<div><a href="https://www.google.com/maps/dir/Current+Location/${object["origin"]}/${object[key]}">🧭 Navigate with current Location</a></div>`)
+      }
       continue
     }
     htmlList += (`<div><b>${key.toUpperCase()}:</b>${object[key]}</div>`)

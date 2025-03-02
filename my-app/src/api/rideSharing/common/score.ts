@@ -35,6 +35,8 @@ export interface CalculatedDataType {
  * @param pickupTimeEstimate 
  * @returns { pay,miles,time,timeMinutes,pricePerMile,pricePerHour,perMileRating,perHourRating,passengerRating,distanceDifference}
  */
+
+//TODO: Add a parameter for which app its from, the request
 export function calculateScore(
   data: googleRouteResponse,
   passengerRating: number,
@@ -61,6 +63,9 @@ export function calculateScore(
       throw new Error(`Google maps failed, No routes found`);
     }
     // For now using first default TODO: find closest match the app uses and use that for factoring solution
+    // TODO: Check the factor is not too high, if it is, then the route is not accurate
+    // TODO: If distance is high then factoring should be lower that 0.1, maybe 5 miles+ , and 
+    // TODO: if origin and destination is detailed, then the factor should not be applied
     let primaryData = data.routes[0];
     // data.routes.sort((a, b) => a.distanceMeters - b.distanceMeters) // small to big sorted
     if (data.routes.length > 1) {

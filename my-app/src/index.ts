@@ -22,6 +22,7 @@ export type Bindings = {
   TRIPLOG: D1Database;
 }
 
+//TODO: Add a way to check for duplicate request , and not make the same request again
 const app = new Hono<{ Bindings: Bindings }>();
 app.route('/api', uberController);
 app.route('/api', boltController);

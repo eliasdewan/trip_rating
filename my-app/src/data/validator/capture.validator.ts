@@ -20,6 +20,8 @@ const containsIncludesSchema = (searchString: string) => {
 
 export const searchResult = (searchString: string, failedRequest: { [key: string]: string }[]) => {
   const schema = containsIncludesSchema(searchString);
+  console.log(searchString,"");
+  
   return schema.safeParse(failedRequest)
 }
 

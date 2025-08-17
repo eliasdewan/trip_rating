@@ -57,18 +57,22 @@ export function extractBoltData(boltJsonData: { [key: string]: string }[]): Extr
       }
 
       // Check for the pickup distance (e.g., "404 ft" or "2.2 mi")
+      console.log(">",text);
+      console.log("#",extract.pickupDistance);
+      
       if (!text.includes('•')) {
         if (text.includes('ft')) {
           const feet = parseFloat(text.replace(' ft', ''));
           extract.pickupDistance = (feet / 5280); // Convert feet to miles and fix to 2 decimal places
-        } else if (text.includes('mi') && !text.includes('min')) {
+        } else if (text.endsWith(' mi') && !text.endsWith(' min')) {
+          console.log("trigger mi");
           extract.pickupDistance = parseFloat(text.replace(' mi', '')); // Already in miles
         }
       }
 
       // Check for the pickup time estimate (e.g., "1 min")
-      if (text.includes('min') && !boltJsonData[i + 1].text.includes('•')) {
-        if (boltJsonData[i + 1].text.includes('ft') || boltJsonData[i + 1].text.includes('mi')) {
+      if (text.endsWith(' min') && !boltJsonData[i + 1].text.includes('•')) {
+        if (boltJsonData[i + 1].text.endsWith('ft') || boltJsonData[i + 1].text.includes('mi')) {
           extract.pickupTimeEstimate = parseInt(text.replace(' min', ''), 10); // Convert to integer
         }
       }

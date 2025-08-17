@@ -22,6 +22,7 @@ type cleanExtractedUberData = {
 
   indexedAddressPass: boolean,
   indexedAddress: string[],
+  detailedAddress: boolean,
   noOrigin: boolean,
 
 
@@ -109,10 +110,12 @@ export default function uberExtractData(jsonData: any) {
 
   //Address index based extraction TODO: data can have address origin specific on the next line after outcode, in plcae of diatance
   let indexedAddress: string[] = [];
+  let detailedAddress: boolean = false;
   // Extra precise origin - first address[+2] and outcode[+1], then destination[+4]
   if (textList[awayIndex + 3].includes("mi trip") || textList[awayIndex + 3].includes("mi) trip")) {
     indexedAddress.push(textList[awayIndex + 2] + ", " + textList[awayIndex + 1]);
     indexedAddress.push(textList[awayIndex + 4]);
+    detailedAddress = true;
   }
   // No origin provided - will assume LONDON and [+2] destination
   else if (textList[awayIndex + 1].includes("mi trip")) {
@@ -127,6 +130,7 @@ export default function uberExtractData(jsonData: any) {
 
   status.indexedAddressPass = indexedAddress.length === 2 ? true : false // checking the order is right
   status.indexedAddress = indexedAddress;
+  status.detailedAddress = detailedAddress;
 
   // Multiple Stops - if multiple stops are found, consider adding static duration
   status.multipleStops = false;

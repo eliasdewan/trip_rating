@@ -62,6 +62,7 @@ export function extractData(jsonData: any) {
    const passengerRating = cleanDataExtracted.customerRating;
    const pay = cleanDataExtracted.pay
    const driverAppDistance = cleanDataExtracted.tripLength;
+   const detailedAddress = cleanDataExtracted.detailedAddress;
    const pickupDistance = cleanDataExtracted.pickupDistance;
    const pickupTimeEstimate = cleanDataExtracted.pickupTimeEstimate;
    const uberTripMinutes = cleanDataExtracted.uberTripDurationMinutes;
@@ -70,9 +71,9 @@ export function extractData(jsonData: any) {
 
    // returns string for http request and other
 
-   console.log({ ...locations, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate, uberTripMinutes, uberTripDurationArrayHourMinutes, multipleStops });
+   console.log({ ...locations, detailedAddress, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate, uberTripMinutes, uberTripDurationArrayHourMinutes, multipleStops });
 
-   return { ...locations, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate, uberTripMinutes, uberTripDurationArrayHourMinutes, multipleStops }
+   return { ...locations, detailedAddress, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate, uberTripMinutes, uberTripDurationArrayHourMinutes, multipleStops }
 }
 
 // TODO: possible solution to same address and first part of the address, get random locations using the distance and approximate, verify they are within locality of the post code,

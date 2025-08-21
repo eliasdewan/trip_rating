@@ -70,7 +70,6 @@ app.post('/uberScore', async (c) => {
       passengerRating,
       pay,
       driverAppDistance,
-      detailedAddress,
       pickupDistance,
       pickupTimeEstimate,
       uberTripMinutes,
@@ -80,9 +79,7 @@ app.post('/uberScore', async (c) => {
       origin,
       destination,
       passengerRating,
-      pay,
-      driverAppDistance,
-      detailedAddress,
+      pay, driverAppDistance,
       pickupDistance,
       pickupTimeEstimate,
       uberTripMinutes,
@@ -128,7 +125,7 @@ app.post('/uberScore', async (c) => {
 
 
     // 4. Calculate the result for desired output
-    const ratingResult = calculateScore(googleJsonData, +passengerRating, pay, driverAppDistance, detailedAddress, pickupDistance, pickupTimeEstimate, multipleStops);
+    const ratingResult = calculateScore(googleJsonData, +passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate);
     console.log(ratingResult);
 
     const successResponse = {

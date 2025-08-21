@@ -6,12 +6,12 @@
     "db": "wrangler d1 list"
   },
   "dependencies": {
-    "@hono/zod-validator": "^0.7.2",
-    "hono": "^4.9.2",
-    "zod": "^4.0.17"
+    "@hono/zod-validator": "^0.2.2",
+    "hono": "^4.5.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250816.0",
-    "wrangler": "^4.30.0"
+    "@cloudflare/workers-types": "^4.20240529.0",
+    "wrangler": "^3.70.0"
   }
 }

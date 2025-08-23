@@ -1,4 +1,3 @@
-
 const stringCommaString = "^[^,]+,[^,]+$"
 const integerRegex = /\b\d+\b/
 const decimalRegex = /\d+\.\d+/
@@ -60,8 +59,20 @@ export default function uberExtractData(jsonData: any) {
     payStructureIndex = textList.findIndex(line => line.includes("reservation"));
     status.reservation = true;
   }
-  // Reservation scenario
-  let awayIndex: number = textList.findIndex(line => line.includes("away"));
+
+
+  ////////////////////
+
+  // Find the first occurrence of "mins" and "mi" for pickup distance and time estimate
+  let awayIndex = textList.findIndex(line => line.match(/\d+\s*mins\s*\(\d+(\.\d+)?\s*mi\)/));
+  if (awayIndex !== -1) {
+    let pickupMatch = textList[awayIndex].match(/(\d+)\s*mins\s*\((\d+(\.\d+)?)\s*mi\)/);
+    if (pickupMatch) {
+      status.pickupTimeEstimate = Number(pickupMatch[1]); // Extract time in minutes
+      status.pickupDistance = Number(pickupMatch[2]); // Extract distance in miles
+    }
+  }
+
 
 
   status.payStructureIndexPass = awayIndex - payStructureIndex === 1 ? true : false // checking the order is right
@@ -69,12 +80,6 @@ export default function uberExtractData(jsonData: any) {
   status.payStructureString = textList[payStructureIndex];
   status.awayIndex = awayIndex;
   status.away = textList[awayIndex];
-
-  // Pickup distance and time estimate in minutes and miles
-  let pickupDistance = Number(decimalRegex.exec(textList[awayIndex]))
-  let pickupTimeEstimate = Number(integerRegex.exec(textList[awayIndex]))
-  status.pickupDistance = pickupDistance;
-  status.pickupTimeEstimate = pickupTimeEstimate;
 
 
   // TODO: uber could have only one address or no origin, only destination.
@@ -86,47 +91,26 @@ export default function uberExtractData(jsonData: any) {
   status.regFindAddresses = regFindAddresses;
 
   // Trip length finding with string [-- mi trip --]
-  let tripLengthIndex = textList.findIndex(line => line.includes("mi trip") || line.includes("mi) trip"))
-  status.tripLengthIndexPass = tripLengthIndex - awayIndex === 2 ? true : false // When there is no detailed address this is true. Common case should pass
-  status.tripLengthIndex = tripLengthIndex;
-  status.tripLength = Number(decimalRegex.exec(textList[tripLengthIndex])?.find(Number));
-
-  // Trip duration from uber [-- N* hr N* min / N* mins --]
-  let tripLengthString = textList[tripLengthIndex]
-  let trStrArr = tripLengthString.split(" ")
-  // If string contains both hr and min
-  if (tripLengthString.includes("hr") && tripLengthString.includes("min")) { // Change this to just hr, for better no miss chance
-    let uberTripDurationMinutes = +trStrArr[0] * 60 + +trStrArr[2]
-    status.uberTripDurationMinutes = uberTripDurationMinutes
-    let uberTripDurationArray = [+trStrArr[0], +trStrArr[2]]
-    status.uberTripDurationArrayHourMinutes = uberTripDurationArray
+  let tripLengthIndex = textList.findIndex((line, index) =>
+    index > awayIndex && line.match(/\d+\s*mins\s*\(\d+(\.\d+)?\s*mi\)/)
+  );
+  if (tripLengthIndex !== -1) {
+    let tripMatch = textList[tripLengthIndex].match(/(\d+)\s*mins\s*\((\d+(\.\d+)?)\s*mi\)/);
+    if (tripMatch) {
+      status.uberTripDurationMinutes = Number(tripMatch[1]); // Extract trip duration in minutes
+      status.tripLength = Number(tripMatch[2]); // Extract trip length in miles
+    }
   }
-  // If string only contains "mins" and no "hr"  
-  else if (!tripLengthString.includes("hr") && tripLengthString.includes("mins")) {
-    status.uberTripDurationMinutes = +trStrArr[0]
-    status.uberTripDurationArrayHourMinutes = [+trStrArr[0]]
-  }
+  
 
   //Address index based extraction TODO: data can have address origin specific on the next line after outcode, in plcae of diatance
-  let indexedAddress: string[] = [];
-  // Extra precise origin - first address[+2] and outcode[+1], then destination[+4]
-  if (textList[awayIndex + 3].includes("mi trip") || textList[awayIndex + 3].includes("mi) trip")) {
-    indexedAddress.push(textList[awayIndex + 2] + ", " + textList[awayIndex + 1]);
-    indexedAddress.push(textList[awayIndex + 4]);
+    let indexedAddress: string[] = [];
+  if (awayIndex !== -1 && tripLengthIndex !== -1) {
+    indexedAddress = [textList[awayIndex + 1], textList[tripLengthIndex + 1]];
   }
-  // No origin provided - will assume LONDON and [+2] destination
-  else if (textList[awayIndex + 1].includes("mi trip")) {
-    status.noOrigin = true;
-    indexedAddress = ["London", textList[awayIndex + 2]];
-  }
-  // REGULAR behavior, address after away text[+1], then miles trip[+2] , then destination[+3]
-  else {
-    indexedAddress = [textList[awayIndex + 1], textList[awayIndex + 3]];
-  }
-
-
-  status.indexedAddressPass = indexedAddress.length === 2 ? true : false // checking the order is right
   status.indexedAddress = indexedAddress;
+  status.indexedAddressPass = indexedAddress.length === 2;
+
 
   // Multiple Stops - if multiple stops are found, consider adding static duration
   status.multipleStops = false;
@@ -142,7 +126,8 @@ export default function uberExtractData(jsonData: any) {
   status.payPass = tripLengthIndex - awayIndex === 2 ? true : false; // checking the order is right
   status.pay = Number(pay.replace("£", ""));
 
-  const payStructureNumbers = textList[payStructureIndex].match(/[\d.]+/g).map(Number).filter(i => i > 0);
+  const payStructureMatch = textList[payStructureIndex].match(/[\d.]+/g);
+  const payStructureNumbers = payStructureMatch ? payStructureMatch.map(Number).filter(i => i > 0) : [];
   if (status.reservation) {
     status.calculatedPayPass = false;
     status.calculatedPay = status.pay;

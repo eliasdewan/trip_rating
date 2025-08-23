@@ -60,20 +60,20 @@ export default function uberExtractData(jsonData: any) {
     status.reservation = true;
   }
 
+  // Find the first occurrence of time and distance, including "<1 min (0 mi)"
+  let awayIndex = textList.findIndex(line =>
+    line.match(/<\d+\s*min\s*\(\d+(\.\d+)?\s*mi\)/) || // Handle "<1 min (0 mi)"
+    line.match(/\d+\s*min\s*\(\d+(\.\d+)?\s*mi\)/) // Handle "1 min (0.1 mi)"
+  );
 
-  ////////////////////
-
-  // Find the first occurrence of "mins" and "mi" for pickup distance and time estimate
-  let awayIndex = textList.findIndex(line => line.match(/\d+\s*mins\s*\(\d+(\.\d+)?\s*mi\)/));
   if (awayIndex !== -1) {
-    let pickupMatch = textList[awayIndex].match(/(\d+)\s*mins\s*\((\d+(\.\d+)?)\s*mi\)/);
-    if (pickupMatch) {
-      status.pickupTimeEstimate = Number(pickupMatch[1]); // Extract time in minutes
-      status.pickupDistance = Number(pickupMatch[2]); // Extract distance in miles
+    const awayMatch = textList[awayIndex].match(/<(\d+)\s*min\s*\((\d+(\.\d+)?)\s*mi\)/) || // Match "<1 min (0 mi)"
+                       textList[awayIndex].match(/(\d+)\s*min\s*\((\d+(\.\d+)?)\s*mi\)/); // Match "1 min (0.1 mi)"
+    if (awayMatch) {
+      status.pickupTimeEstimate = awayMatch[1] ? Number(awayMatch[1]) : 0; // Extract time in minutes
+      status.pickupDistance = Number(awayMatch[2]); // Extract distance in miles
     }
   }
-
-
 
   status.payStructureIndexPass = awayIndex - payStructureIndex === 1 ? true : false // checking the order is right
   status.payStructureIndex = payStructureIndex;
@@ -90,15 +90,17 @@ export default function uberExtractData(jsonData: any) {
   status.regFindAddressArrayPass = regFindAddresses.length === 2 ? true : false // checking the order is right
   status.regFindAddresses = regFindAddresses;
 
-  // Trip length finding with string [-- mi trip --]
+  // Find the next occurrence of "mins" or "hr min" and "mi" for trip length
   let tripLengthIndex = textList.findIndex((line, index) =>
-    index > awayIndex && line.match(/\d+\s*mins\s*\(\d+(\.\d+)?\s*mi\)/)
+    index > awayIndex && line.match(/(\d+\s*hr\s*)?(\d+)\s*min\s*\(\d+(\.\d+)?\s*mi\)/)
   );
   if (tripLengthIndex !== -1) {
-    let tripMatch = textList[tripLengthIndex].match(/(\d+)\s*mins\s*\((\d+(\.\d+)?)\s*mi\)/);
+    let tripMatch = textList[tripLengthIndex].match(/(?:(\d+)\s*hr\s*)?(\d+)\s*min\s*\((\d+(\.\d+)?)\s*mi\)/);
     if (tripMatch) {
-      status.uberTripDurationMinutes = Number(tripMatch[1]); // Extract trip duration in minutes
-      status.tripLength = Number(tripMatch[2]); // Extract trip length in miles
+      const hours = tripMatch[1] ? Number(tripMatch[1]) : 0; // Extract hours if present
+      const minutes = Number(tripMatch[2]); // Extract minutes
+      status.uberTripDurationMinutes = hours * 60 + minutes; // Convert to total minutes
+      status.tripLength = Number(tripMatch[3]); // Extract trip length in miles
     }
   }
   

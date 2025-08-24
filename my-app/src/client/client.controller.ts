@@ -1,12 +1,13 @@
 import { Hono } from "hono";
 import { Bindings } from "..";
+import { modernHtml } from "./view.modern";
 
 const app = new Hono<{ Bindings: Bindings }>();
 
 // 1. Empty list initialize 
 let htmlList = "";
 
-app.get('/sql', async c => {
+app.get('/sql/:modern?', async c => {
   // Base
   const currentUrl = new URL(c.req.url);
   let searchDate;
@@ -15,11 +16,11 @@ app.get('/sql', async c => {
   let limit;
   if (limitParam) {
     limit = parseInt(limitParam);
-    if (limit > 30) {
-      limit = 10;
+    if (limit > 50) {
+      limit = 20;
     }
   } else {
-    limit = 10;
+    limit = 20;
   }
   if (!date) {
     searchDate = new Date().toLocaleDateString('en-CA')
@@ -28,82 +29,53 @@ app.get('/sql', async c => {
   }
 
   htmlList = "";
-  console.log(searchDate);
+  console.log("📅", searchDate);
+  const modern = c.req.param('modern');
 
-  // 2. Query the database
-  const { results } = await c.env.TRIPLOG.prepare(`SELECT * FROM successlogs WHERE DATE(timestamp) = ? ORDER BY (id) DESC limit ?`).bind(searchDate, limit).all();
-  // console.log(results);
-  console.log(results);
-
-  // 3. Create headline for entry
-  for (let i in results) {
-    htmlList += `<div><b style="color:blue;">${results[i].entry}</b>`
-    htmlList += `<div><b style="color:blue;">${results[i].timestamp}</b>`
-    // console.log(JSON.parse(results[i].data));
-    // Data
-
-    // 4. For each entry loop through to get all the keys and data
-    try { addObject(JSON.parse(results[i].data)); }
-    catch {
-
-    }
+  if (modern === 'modern') {
+    const { results: requestData } = await c.env.TRIPLOG.prepare(`SELECT * FROM successlogs WHERE DATE(timestamp) = ? AND ENTRY LIKE '%Request' ORDER BY (id)  DESC limit ?`).bind(searchDate, limit).all();
+    const { results: resultData } = await c.env.TRIPLOG.prepare(`SELECT * FROM successlogs WHERE DATE(timestamp) = ? AND ENTRY LIKE '%SuccessResponse' ORDER BY (id) DESC limit ?`).bind(searchDate, limit).all();
+    htmlList = modernHtml(requestData as Array<{ data: string }>, resultData as Array<{ data: string }>);
 
   }
+  else {
+
+    // 2. Query the database
+    const { results } = await c.env.TRIPLOG.prepare(`SELECT * FROM successlogs WHERE DATE(timestamp) = ? ORDER BY (id) DESC limit ?`).bind(searchDate, limit).all();
+    // console.log(results);
+
+    // 3. Create headline for entry
+    for (let i in results) {
+      htmlList += `<div><b style="color:blue;">${results[i].entry}</b>`
+      htmlList += `<div><b style="color:blue;">${results[i].timestamp}</b>`
+      // console.log(JSON.parse(results[i].data));
+      // Data
+
+      // 4. For each entry loop through to get all the keys and data
+      try {
+        addObject(JSON.parse(results[i].data));
+      }
+      catch { }
+    }
+
+
+  }
+
+
+
   // return c.json(results);
   const htmlString = clientTemplateString(currentUrl, searchDate, limit, htmlList);
   return c.html(htmlString);
 })
 
-// Same as /sql but with keys
-app.get('/', async (c) => {
-  // Base
-  const currentUrl = new URL(c.req.url);
-  let searchDate;
-  const date = c.req.query('date');
-  let limitParam = c.req.query('limit');
-  let limit;
-  if (limitParam) {
-    limit = parseInt(limitParam);
-    if (limit > 30) {
-      limit = 10;
-    }
-  } else {
-    limit = 10;
-  }
-  if (!date) {
-    searchDate = new Date().toLocaleDateString('en-CA')
-  } else {
-    searchDate = date;
-  }
 
 
-  // const keys = await c.env.TRIP_LOG.list({ prefix: "2024-08-09T14" })
-
-  htmlList = "";
-  let result, value, keys;
-
-  try {
-    result = await c.env.TRIP_LOG.list({ prefix: searchDate })
-    if (result) {
-      console.log("yes keys");
-      keys = result.keys.toReversed().slice(0, limit);
-      for (let i in keys) {
-        value = await c.env.TRIP_LOG.get(keys[i].name, { type: "json" }) as { [key: string]: any }
-        htmlList += `<div><b style="color:blue;">${keys[i].name}:</b>`
-        addObject(value);
-      }
-
-      // value = await c.env.TRIP_LOG.get(keys[0].name, { type: "json" }) as { [key: string]: any }
-      // htmlList += `<div><b style="color:blue;">${keys[0].name}:</b>`
-      // addObject(value);
-    }
-  } catch (e) {
-    console.log(e);
-  }
-
-  const htmlString = clientTemplateString(currentUrl, searchDate, limit, htmlList);
-  return c.html(htmlString);
+app.get('/', async c => {
+  return c.redirect('/sql');
 })
+
+app.get('/modern', async c => { })
+
 
 function clientTemplateString(currentUrl: URL, searchDate: string, limit: number, htmlList: string) {
 
@@ -127,7 +99,7 @@ function clientTemplateString(currentUrl: URL, searchDate: string, limit: number
 <input type="date" name="date" value="${searchDate}">
 <button type="reset" >🔄️</button>
 <label for="dateInput">Limit:</label>
-<input type="number" name="limit" value="${limit}" max="30" min="1">
+<input type="number" name="limit" value="${limit}" max="50" min="1">
 <button type="submit" style="width: 50%; height: 100px;">🦉</button>
 </fieldset>
 </form>
@@ -148,7 +120,7 @@ function addObject(object: { [key: string]: any }) {
     if (typeof (object[key]) == "object") {
       // FIXME: some how numbers appear in keys when there is bigger list, maybe find out
       htmlList += `<div><b style="color:red;">${key.toUpperCase()}:</b>`
-      console.log(Object.keys(object[key]));
+      console.log("🔑", Object.keys(object[key]));
 
       // 7. If the object just has value text just add that value, else loop through the object again
       if (Object.keys(object[key])[0] == "text") {

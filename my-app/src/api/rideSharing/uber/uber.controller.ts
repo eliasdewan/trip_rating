@@ -60,9 +60,7 @@ app.post('/uberScore', async (c) => {
     const uberJsonData = await c.req.json();
 
     // Store the request in database
-    await c.env.TRIP_LOG.put(`${new Date().toISOString()} uberScore:Request`, JSON.stringify(uberJsonData));
     await c.env.TRIPLOG.prepare('INSERT INTO successlogs (entry,data,timestamp) VALUES (?,?,?)').bind('uberScore:Request', JSON.stringify(uberJsonData), new Date().toISOString()).run();
-
 
     // 2. Extract data from the request data
     let origin,
@@ -86,7 +84,6 @@ app.post('/uberScore', async (c) => {
       uberTripDurationArrayHourMinutes,
       multipleStops
     } = extractData(uberJsonData));
-    const destinationInfoString = getOutcodeDataString(origin as string, destination as string);
 
     // 3. Get data from google maps api or use static 
 
@@ -105,7 +102,6 @@ app.post('/uberScore', async (c) => {
       destination = fixSearchAddress(destination);
     }
 
-
     let googleJsonData;
     // If includes test, use mock data.
     if (TEST_REQUEST == 'true') {
@@ -123,19 +119,19 @@ app.post('/uberScore', async (c) => {
       destination = "Same as origin " + destination;
     }
 
-
     // 4. Calculate the result for desired output
-    const ratingResult = calculateScore(googleJsonData, +passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate);
-    console.log(ratingResult);
+    const ratingResult = calculateScore(googleJsonData, +passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate, multipleStops);
+    // console.log(ratingResult);
 
-    const successResponse = {
-      ...ratingResult, destinationInfoString, scoreParameters: {
-        googleJsonData, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate, uberTripMinutes,
-        uberTripDurationArrayHourMinutes,
-        multipleStops
-      }, googleApiParameters: { origin, destination, key: "secretKey" }
-    };
-    await c.env.TRIP_LOG.put(`${new Date().toISOString()} uberScore:SuccessResponse}`, JSON.stringify(successResponse));
+    const scoreParameters = {
+      googleJsonData, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate,multipleStops, uberTripMinutes, uberTripDurationArrayHourMinutes 
+    }
+
+    const googleApiParameters = { origin, destination, key: "secretKey" }
+
+    const destinationInfoString = getOutcodeDataString(origin as string, destination as string);
+
+    const successResponse = { ...ratingResult, destinationInfoString, scoreParameters, googleApiParameters };
     await c.env.TRIPLOG.prepare('INSERT INTO successlogs (entry,data,timestamp) VALUES (?,?,?)').bind('uberScore:SuccessResponse', JSON.stringify(successResponse), new Date().toISOString()).run();
 
     return c.json(successResponse);
@@ -144,7 +140,6 @@ app.post('/uberScore', async (c) => {
 
     console.error('Error running score api:', error);
     const errorResponse = { error: `${error} Failed to fetch Google estimate from google v2 score api `, usedLocation: [origin, destination] };
-    await c.env.TRIP_LOG.put(`${new Date().toISOString()} uberScore:ErrorResponse}`, JSON.stringify(errorResponse));
     await c.env.TRIPLOG.prepare('INSERT INTO successlogs (entry,data,timestamp) VALUES (?,?,?)').bind('uberScore:ErrorResponse', JSON.stringify(errorResponse), new Date().toISOString()).run();
 
 

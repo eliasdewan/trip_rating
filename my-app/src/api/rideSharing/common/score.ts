@@ -43,7 +43,8 @@ export function calculateScore(
   pay: number,
   driverAppDistance: number,
   pickupDistance: number,
-  pickupTimeEstimate: number
+  pickupTimeEstimate: number,
+  multipleStops: boolean
 ): CalculatedDataType | any {
 
   const miles_to_km: number = 1.609;

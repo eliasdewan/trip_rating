@@ -62,13 +62,12 @@ export default function uberExtractData(jsonData: any) {
 
   // Find the first occurrence of time and distance, including "<1 min (0 mi)"
   let awayIndex = textList.findIndex(line =>
-    line.match(/<\d+\s*min\s*\(\d+(\.\d+)?\s*mi\)/) || // Handle "<1 min (0 mi)"
-    line.match(/\d+\s*min\s*\(\d+(\.\d+)?\s*mi\)/) // Handle "1 min (0.1 mi)"
+    line.match(/\d+\s*min(s)?\s*\(\d+(\.\d+)?\s*mi\)/)
   );
 
   if (awayIndex !== -1) {
-    const awayMatch = textList[awayIndex].match(/<(\d+)\s*min\s*\((\d+(\.\d+)?)\s*mi\)/) || // Match "<1 min (0 mi)"
-                       textList[awayIndex].match(/(\d+)\s*min\s*\((\d+(\.\d+)?)\s*mi\)/); // Match "1 min (0.1 mi)"
+    const awayMatch = textList[awayIndex].match(/(\d+)\s*min(?:s)?\s*\((\d+(\.\d+)?)\s*mi\)/) // Match "<1 min (0 mi)"
+
     if (awayMatch) {
       status.pickupTimeEstimate = awayMatch[1] ? Number(awayMatch[1]) : 0; // Extract time in minutes
       status.pickupDistance = Number(awayMatch[2]); // Extract distance in miles
@@ -81,7 +80,6 @@ export default function uberExtractData(jsonData: any) {
   status.awayIndex = awayIndex;
   status.away = textList[awayIndex];
 
-
   // TODO: uber could have only one address or no origin, only destination.
 
   // Address array finding with regex match [-- string comma string --]
@@ -90,12 +88,14 @@ export default function uberExtractData(jsonData: any) {
   status.regFindAddressArrayPass = regFindAddresses.length === 2 ? true : false // checking the order is right
   status.regFindAddresses = regFindAddresses;
 
-  // Find the next occurrence of "mins" or "hr min" and "mi" for trip length
+  // Find the next occurrence of "mins" or "hr min" and "mi" for trip length, starts after awayIndex
   let tripLengthIndex = textList.findIndex((line, index) =>
-    index > awayIndex && line.match(/(\d+\s*hr\s*)?(\d+)\s*min\s*\(\d+(\.\d+)?\s*mi\)/)
+    index > awayIndex && line.match(/(\d+\s*hr\s*)?(\d+)\s*mins\s*\(\d+(\.\d+)?\s*mi\)/)
   );
+
   if (tripLengthIndex !== -1) {
-    let tripMatch = textList[tripLengthIndex].match(/(?:(\d+)\s*hr\s*)?(\d+)\s*min\s*\((\d+(\.\d+)?)\s*mi\)/);
+    let tripMatch = textList[tripLengthIndex].match(/(?:(\d+)\s*hr\s*)?(\d+)\s*mins\s*\((\d+(\.\d+)?)\s*mi\)/);
+
     if (tripMatch) {
       const hours = tripMatch[1] ? Number(tripMatch[1]) : 0; // Extract hours if present
       const minutes = Number(tripMatch[2]); // Extract minutes
@@ -103,10 +103,10 @@ export default function uberExtractData(jsonData: any) {
       status.tripLength = Number(tripMatch[3]); // Extract trip length in miles
     }
   }
-  
+
 
   //Address index based extraction TODO: data can have address origin specific on the next line after outcode, in plcae of diatance
-    let indexedAddress: string[] = [];
+  let indexedAddress: string[] = [];
   if (awayIndex !== -1 && tripLengthIndex !== -1) {
     indexedAddress = [textList[awayIndex + 1], textList[tripLengthIndex + 1]];
   }

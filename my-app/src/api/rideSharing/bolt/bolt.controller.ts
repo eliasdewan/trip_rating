@@ -18,17 +18,26 @@ app.post('/boltScore', async (c) => {
     return c.json('No key provided', 400)
   }
   const boltJsonData = await c.req.json();
-  await c.env.TRIP_LOG.put(`${new Date().toISOString()} boltScore:Request`, JSON.stringify(boltJsonData));
   await c.env.TRIPLOG.prepare('INSERT INTO successlogs (entry,data,timestamp) VALUES (?,?,?)').bind('boltScore:Request', JSON.stringify(boltJsonData), new Date().toISOString()).run();
 
   try {
-    const { origin, destination, distance, pay, pickupDistance, pickupTimeEstimate, passengerRating }: ExtractBolt = extractBoltData(boltJsonData);
+    const { origin, destination, driverAppDistance, pay, pickupDistance, pickupTimeEstimate, passengerRating, multipleStops }: ExtractBolt = extractBoltData(boltJsonData);
 
     let googleJsonData = await computeRoutesV2(origin, destination, GOOGLE_MAPS_API_KEY) as googleRouteResponse; // TODO: INPUT KEY HERE
-    const ratingResult: CalculatedDataType = calculateScore(googleJsonData, passengerRating, pay, distance, pickupDistance, pickupTimeEstimate);
+    
+    const scoreParameters = {
+      googleJsonData, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate, multipleStops //uberTripMinutes, uberTripDurationArrayHourMinutes
+    }
+    
+    const ratingResult: CalculatedDataType = calculateScore(googleJsonData, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate, multipleStops);
+
+
+
+
+    const googleApiParameters = { origin, destination, key: "secretKey" };
     const destinationInfoString = getOutcodeDataString(origin, destination);
-    const successResponse = { message: "Success", ...ratingResult, destinationInfoString, googleJsonData, extract: { origin, destination, distance, pay, pickupDistance, pickupTimeEstimate, passengerRating } };
-    await c.env.TRIP_LOG.put(`${new Date().toISOString()} boltScore:SuccessResponse`, JSON.stringify(successResponse));
+
+    const successResponse = { ...ratingResult, destinationInfoString, scoreParameters, googleApiParameters };
     await c.env.TRIPLOG.prepare('INSERT INTO successlogs (entry,data,timestamp) VALUES (?,?,?)').bind('boltScore:SuccessResponse', JSON.stringify(successResponse), new Date().toISOString()).run();
 
 
@@ -36,7 +45,6 @@ app.post('/boltScore', async (c) => {
 
   } catch (error) {
     const errorResponse = { message: "data extraction or google  failed, aborting ", error };
-    await c.env.TRIP_LOG.put(`${new Date().toISOString()} boltScore:ErrorResponse}`, JSON.stringify(errorResponse));
     await c.env.TRIPLOG.prepare('INSERT INTO successlogs (entry,data,timestamp) VALUES (?,?,?)').bind('boltScore:ErrorResponse', JSON.stringify(errorResponse), new Date().toISOString()).run();
 
 

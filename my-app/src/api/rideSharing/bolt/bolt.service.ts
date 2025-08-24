@@ -1,17 +1,18 @@
 export interface ExtractBolt {
   origin: string,
   destination: string,
-  distance: number,
+  driverAppDistance: number,
   pay: number,
   pickupDistance: number,
   pickupTimeEstimate: number,
   passengerRating: number
+  multipleStops: boolean,
 }
 
 
 
 export function extractBoltData(boltJsonData: { [key: string]: string }[]): ExtractBolt | any {
-  const extract: Partial<ExtractBolt> = {};
+  const extract: Partial<ExtractBolt> = { multipleStops: false };
   try {
     for (let i = 0; i < boltJsonData.length; i++) {
       // console.log(extract);
@@ -28,19 +29,19 @@ export function extractBoltData(boltJsonData: { [key: string]: string }[]): Extr
           const parts = text.split(' • ');
           extract.destination = parts[0];
           if (parts[1].includes('mi')) {
-            extract.distance = parseFloat(parts[1].replace(' mi', ''));
+            extract.driverAppDistance = parseFloat(parts[1].replace(' mi', ''));
 
-            
+
           } else if (parts[1].includes('ft')) {
             const feet = parseFloat(parts[1].replace(' ft', ''));
-            extract.distance = (feet / 5280); // Convert feet to miles and fix to 2 decimal places
+            extract.driverAppDistance = (feet / 5280); // Convert feet to miles and fix to 2 decimal places
 
 
           }
         } else {
           extract.destination = text;
-          extract.distance = 0.404;
-          
+          extract.driverAppDistance = 0.404;
+
 
         }
         extract.destination = extract.destination.concat(" UK"); //  Mitigation for when the postcode like N5 and used in uk
@@ -49,17 +50,23 @@ export function extractBoltData(boltJsonData: { [key: string]: string }[]): Extr
       // Check for the pay string (e.g., "£5.59 · Net")
       if (text.includes('£') && text.includes('· Net')) {
         extract.pay = Number(text.split(' ')[0].replace('£', ''));
-        if (extract.distance === 0.404) {
-          extract.distance = extract.pay;
-      // FIXME: Adapt in score, so this distance could be ignored
+        if (extract.driverAppDistance === 0.404) {
+          extract.driverAppDistance = extract.pay;
+          // FIXME: Adapt in score, so this distance could be ignored
 
         }
       }
 
-      // Check for the pickup distance (e.g., "404 ft" or "2.2 mi")
-      console.log(">",text);
-      console.log("#",extract.pickupDistance);
+      // Check multiple stops
       
+      if (text.match(/\+ \d+ stops/)) {
+        extract.multipleStops = true;
+      }
+
+      // Check for the pickup distance (e.g., "404 ft" or "2.2 mi")
+      console.log(">", text);
+      console.log("#", extract.pickupDistance);
+
       if (!text.includes('•')) {
         if (text.includes('ft')) {
           const feet = parseFloat(text.replace(' ft', ''));

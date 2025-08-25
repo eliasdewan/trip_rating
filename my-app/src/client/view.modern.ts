@@ -1,15 +1,25 @@
 import { CalculatedDataType } from "../api/rideSharing/common/score";
 
-export function modernHtml(requestData: Array<{ data: string }>, resultData: Array<{ data: string }>) {
+export function modernHtml(requestData: Array<{ entry: string, data: string }>, resultData: Array<{ entry: string, data: string }>) {
 
   let parsedRequestData = requestData.map(item => JSON.parse(item.data));
-  // let parsedResultData: CalculatedDataType[] = resultData.map(item => JSON.parse(item.data));
   let parsedResultData = resultData.map(item => JSON.parse(item.data));
-  // console.log(parsedRequestData, "🐱", parsedResultData);
+  let parsedResultEntry = resultData.map(item => item.entry);
 
+  // console.log(parsedResultEntry, "🐱");
+  // console.log(parsedRequestData, "🐱", parsedResultData);
   let resultHtml = "";
   parsedResultData.forEach((result, index) => {
     if (!result) return;
+
+    let application = 'Unknown';
+    if (parsedResultEntry[index] === 'uberScore:SuccessResponse') {
+      application = 'Uber';
+    }
+    else if (parsedResultEntry[index] === 'boltScore:SuccessResponse') {
+      application = 'Bolt';
+    }
+
 
     const {
       pay,
@@ -19,6 +29,7 @@ export function modernHtml(requestData: Array<{ data: string }>, resultData: Arr
       destinationInfoString,
       timeSummary,
       googleApiParameters,
+      distanceDifferenceFactor,
     } = result;
 
     const collapsedId = `collapsed-${index}`;
@@ -28,18 +39,24 @@ export function modernHtml(requestData: Array<{ data: string }>, resultData: Arr
     resultHtml += `
       <div style="border:1px solid #eee; border-radius:10px; margin:10px 0; background:#fafbfc; box-shadow:0 2px 8px #0001;">
         <div style="padding:16px; display:flex; flex-direction:column; gap:8px;">
-          <div style="font-size:1.2em; font-weight:600; color:#222;">
-            £${pay?.toFixed(2) ?? '-'} &middot; ${miles?.toFixed(2) ?? '-'} mi &middot; ${timeMinutes?.toFixed(0) ?? '-'} min
+        <div style="font-size:1.5em; color:#444;">
+            ${application ?? '-'}
+          </div>  
+        
+        <div style="font-size:1.2em; font-weight:600; color:#222;">
+            £${pay?.toFixed(2) ?? '-'} &middot; ${miles?.toFixed(2) ?? '-'} mi &middot; ${timeMinutes?.toFixed(0) ?? '-'} min &middot; F ${distanceDifferenceFactor}
           </div>
-          <div style="font-size:1em; color:#444;">
+          <div style="font-size:1.5em; color:#444;">
             <span style="font-weight:500;">£/hr:</span> ${pricePerHour?.toFixed(2) ?? '-'}
           </div>
           <div style="font-size:0.95em; color:#666;">
-            <span style="font-weight:500;">From:</span> ${googleApiParameters?.origin ?? '-'}
+            <span style="font-weight:500;">From:</span> <a href="https://www.google.com/maps/search/?api=1&query=${googleApiParameters?.origin ?? '-'}">${googleApiParameters?.origin ?? '-'}</a>
           </div>
           <div style="font-size:0.95em; color:#666;">
-            <span style="font-weight:500;">To:</span> ${googleApiParameters?.destination ?? '-'}
+            <span style="font-weight:500;">To:</span> <a href="https://www.google.com/maps/search/?api=1&query=${googleApiParameters?.destination ?? '-'}">${googleApiParameters?.destination ?? '-'}</a>
           </div>
+          <div style="font-size:0.95em; color:#666;">
+            <span style="font-weight:500;"></span> <div><a href="https://www.google.com/maps/dir/?api=1&origin=${googleApiParameters?.origin ?? '-'}&destination=${googleApiParameters?.destination ?? '-'}">Navigate</a>
           <div style="font-size:0.95em; color:#666;">
             <span style="font-weight:500;">Dest Info:</span> ${destinationInfoString ?? '-'}
           </div>

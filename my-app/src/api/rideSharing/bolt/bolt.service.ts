@@ -1,3 +1,5 @@
+import { getOutcodeDataString } from "../common/outCodes";
+
 export interface ExtractBolt {
   origin: string,
   destination: string,
@@ -7,6 +9,7 @@ export interface ExtractBolt {
   pickupTimeEstimate: number,
   passengerRating: number
   multipleStops: boolean,
+  destinationInfoString: string;
 }
 
 
@@ -91,6 +94,8 @@ export function extractBoltData(boltJsonData: { [key: string]: string }[]): Extr
 
 
     }
+
+    extract.destinationInfoString = getOutcodeDataString(extract.origin as string, extract.destination as string);
 
     return extract as ExtractBolt;
   } catch (error) {

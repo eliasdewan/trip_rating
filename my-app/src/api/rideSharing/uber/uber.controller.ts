@@ -72,7 +72,8 @@ app.post('/uberScore', async (c) => {
       pickupTimeEstimate,
       uberTripMinutes,
       uberTripDurationArrayHourMinutes,
-      multipleStops;
+      multipleStops,
+      destinationInfoString;
     ({
       origin,
       destination,
@@ -82,7 +83,8 @@ app.post('/uberScore', async (c) => {
       pickupTimeEstimate,
       uberTripMinutes,
       uberTripDurationArrayHourMinutes,
-      multipleStops
+      multipleStops,
+      destinationInfoString
     } = extractData(uberJsonData));
 
     // 3. Get data from google maps api or use static 
@@ -128,8 +130,6 @@ app.post('/uberScore', async (c) => {
     }
 
     const googleApiParameters = { origin, destination, key: "secretKey" }
-
-    const destinationInfoString = getOutcodeDataString(origin as string, destination as string);
 
     const successResponse = { ...ratingResult, destinationInfoString, scoreParameters, googleApiParameters };
     await c.env.TRIPLOG.prepare('INSERT INTO successlogs (entry,data,timestamp) VALUES (?,?,?)').bind('uberScore:SuccessResponse', JSON.stringify(successResponse), new Date().toISOString()).run();

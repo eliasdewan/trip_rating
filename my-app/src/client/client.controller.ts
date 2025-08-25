@@ -35,7 +35,7 @@ app.get('/sql/:modern?', async c => {
   if (modern === 'modern') {
     const { results: requestData } = await c.env.TRIPLOG.prepare(`SELECT * FROM successlogs WHERE DATE(timestamp) = ? AND ENTRY LIKE '%Request' ORDER BY (id)  DESC limit ?`).bind(searchDate, limit).all();
     const { results: resultData } = await c.env.TRIPLOG.prepare(`SELECT * FROM successlogs WHERE DATE(timestamp) = ? AND ENTRY LIKE '%SuccessResponse' ORDER BY (id) DESC limit ?`).bind(searchDate, limit).all();
-    htmlList = modernHtml(requestData as Array<{ data: string }>, resultData as Array<{ data: string }>);
+    htmlList = modernHtml(requestData as Array<{ entry: string, data: string }>, resultData as Array<{ entry: string, data: string }>);
 
   }
   else {

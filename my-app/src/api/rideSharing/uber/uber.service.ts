@@ -1,3 +1,4 @@
+import { getOutcodeDataString } from "../common/outCodes";
 import uberExtractData from "./uberExtractTaskerData.service";
 // TODO : format functions into 1 and create function interface or data type for parameter
 
@@ -67,12 +68,15 @@ export function extractData(jsonData: any) {
    const uberTripMinutes = cleanDataExtracted.uberTripDurationMinutes;
    const uberTripDurationArrayHourMinutes = cleanDataExtracted.uberTripDurationArrayHourMinutes;
    const multipleStops = cleanDataExtracted.multipleStops;
+   const destinationInfoString = getOutcodeDataString(locations.origin as string, locations.destination as string);
 
    // returns string for http request and other
+   const extractedData = { ...locations, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate, uberTripMinutes, uberTripDurationArrayHourMinutes, multipleStops, destinationInfoString }
+   
 
-   console.log({ ...locations, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate, uberTripMinutes, uberTripDurationArrayHourMinutes, multipleStops });
+   console.log(extractedData);
 
-   return { ...locations, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate, uberTripMinutes, uberTripDurationArrayHourMinutes, multipleStops }
+   return extractedData
 }
 
 // TODO: possible solution to same address and first part of the address, get random locations using the distance and approximate, verify they are within locality of the post code,

@@ -21,12 +21,12 @@ app.post('/boltScore', async (c) => {
   await c.env.TRIPLOG.prepare('INSERT INTO successlogs (entry,data,timestamp) VALUES (?,?,?)').bind('boltScore:Request', JSON.stringify(boltJsonData), new Date().toISOString()).run();
 
   try {
-    const { origin, destination, driverAppDistance, pay, pickupDistance, pickupTimeEstimate, passengerRating, multipleStops, destinationInfoString }: ExtractBolt = extractBoltData(boltJsonData);
+    const { origin, destination, driverAppDistance, pay, pickupDistance, pickupTimeEstimate, passengerRating, multipleStops, destinationInfoString, appTripTimeEstimate }: ExtractBolt = extractBoltData(boltJsonData);
 
     let googleJsonData = await computeRoutesV2(origin, destination, GOOGLE_MAPS_API_KEY) as googleRouteResponse; // TODO: INPUT KEY HERE
 
     const scoreParameters = {
-      googleJsonData, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate, multipleStops //uberTripMinutes, uberTripDurationArrayHourMinutes
+      googleJsonData, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate, multipleStops, appTripTimeEstimate //uberTripMinutes, uberTripDurationArrayHourMinutes
     }
 
     const ratingResult: CalculatedDataType = calculateScore(googleJsonData, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate, multipleStops);

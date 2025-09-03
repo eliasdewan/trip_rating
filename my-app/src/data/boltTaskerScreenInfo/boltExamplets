@@ -1,0 +1,25 @@
+export default [
+    { "text": "Awaiting rider reply" },
+    { "text": "Bolt" },
+    { "text": "£13.06 (Net, tax included • £12.24 + est. £0.82 holiday pay supplement)" },
+    { "text": "Georgia • 4.9 ★ (18)" },
+    { "text": "19 min • 5.9 mi" },
+    { "text": "Roadhouse Lane Parking, Westfield Stratford" },
+    { "text": "1 stop" },
+    { "text": "35 min • 8.8 mi" },
+    { "text": "IG8, 25 Worcester Cres, 25 Worcester Crescent, Woodford Green IG8 0LX" },
+    { "text": "Accept" },
+    { "text": "Decline" }]
+
+
+var sample2 = [
+    { "text": "Awaiting rider reply" },
+    { "text": "Bolt" },
+    { "text": "£5.23 (Net, tax included • £4.98 + est. £0.25 holiday pay supplement)" },
+    { "text": "Elain • 4.6 ★ (655)" },
+    { "text": "30 min • 6.4 mi" },
+    { "text": "N4  1UJ, Harringay Green Lanes, London" },
+    { "text": "7 min • 1.2 mi" },
+    { "text": "N4, 7 Nichols Close, Osborne Road, London, UK" },
+    { "text": "Accept" }, 
+    { "text": "Decline" }]

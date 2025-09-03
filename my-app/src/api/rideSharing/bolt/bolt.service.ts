@@ -7,12 +7,13 @@ export interface ExtractBolt {
   pay: number,
   pickupDistance: number,
   pickupTimeEstimate: number,
+  appTripTimeEstimate: number,
   passengerRating: number
   multipleStops: boolean,
   destinationInfoString: string;
 }
 
-
+//.match(/(?:(\d+)\s*hr\s*)?(\d+)\s*mins\s*\((\d+(\.\d+)?)\s*mi\)/);
 
 export function extractBoltData(boltJsonData: { [key: string]: string }[]): ExtractBolt | any {
   const extract: Partial<ExtractBolt> = { multipleStops: false };
@@ -22,36 +23,14 @@ export function extractBoltData(boltJsonData: { [key: string]: string }[]): Extr
       const text = boltJsonData[i].text;
       // console.log(text);
 
-      if (i > 3 && boltJsonData[i + 3] && boltJsonData[i + 3]?.text.includes('•')) {
-        if (boltJsonData[i - 1].text.includes('ft') || boltJsonData[i - 1].text.includes('mi')) {
-          extract.origin = text;
-        }
-      }
-      if (i > 4 && boltJsonData[i + 2] && boltJsonData[i + 2]?.text.includes('•')) {
-        if (text.includes('•') && text.length > 8) {
-          const parts = text.split(' • ');
-          extract.destination = parts[0];
-          if (parts[1].includes('mi')) {
-            extract.driverAppDistance = parseFloat(parts[1].replace(' mi', ''));
 
-
-          } else if (parts[1].includes('ft')) {
-            const feet = parseFloat(parts[1].replace(' ft', ''));
-            extract.driverAppDistance = (feet / 5280); // Convert feet to miles and fix to 2 decimal places
-
-
-          }
-        } else {
-          extract.destination = text;
-          extract.driverAppDistance = 0.404;
-
-
-        }
-        extract.destination = extract.destination.concat(" UK"); //  Mitigation for when the postcode like N5 and used in uk
-      }
+      // let payLine = text.match(/^£(\d+.\d{2})/);
+      // if (payLine) {
+      //   extract.pay = parseFloat(payLine[1]);
+      // }
 
       // Check for the pay string (e.g., "£5.59 · Net")
-      if (text.includes('£') && text.includes('· Net')) {
+      if (text.includes('£') && text.includes('Net,')) {
         extract.pay = Number(text.split(' ')[0].replace('£', ''));
         if (extract.driverAppDistance === 0.404) {
           extract.driverAppDistance = extract.pay;
@@ -60,24 +39,65 @@ export function extractBoltData(boltJsonData: { [key: string]: string }[]): Extr
         }
       }
 
-      // Check multiple stops
-      
-      if (text.match(/\+ \d+ stops/)) {
-        extract.multipleStops = true;
+
+      if (i > 4 && boltJsonData[i + 3] && boltJsonData[i - 2]?.text.includes('★')) {
+        if (boltJsonData[i - 1].text.includes('ft') || boltJsonData[i - 1].text.includes('mi')) {
+          extract.origin = text;
+        }
       }
 
-      // Check for the pickup distance (e.g., "404 ft" or "2.2 mi")
-      console.log(">", text);
-      console.log("#", extract.pickupDistance);
+      if (i > 6 && boltJsonData[i + 1]?.text.includes('Accept')) {
+        extract.destination = text;
+      }
 
-      if (!text.includes('•')) {
-        if (text.includes('ft')) {
-          const feet = parseFloat(text.replace(' ft', ''));
-          extract.pickupDistance = (feet / 5280); // Convert feet to miles and fix to 2 decimal places
-        } else if (text.endsWith(' mi') && !text.endsWith(' min')) {
-          console.log("trigger mi");
-          extract.pickupDistance = parseFloat(text.replace(' mi', '')); // Already in miles
+      // (?:\b(\d+)\s+hr\s+)?(\d+)\s+min.*?\b(\d+(?:\.\d+))\s+mi
+
+
+      if (text.includes('min') && text.includes('•')) {
+        let timeMinutes, distanceMiles;
+        console.log("🐱", "min and mi", text);
+
+        if (text.length > 8) {
+
+          const parts = text.split(' • ');
+
+          if (text.includes('mi')) {
+            distanceMiles = parseFloat(parts[1].replace(' mi', ''));
+          } else if (text.includes('ft')) {
+            const feet = parseFloat(parts[1].replace(' ft', ''));
+            distanceMiles = (feet / 5280); // Convert feet to miles and fix to 2 decimal places
+          }
+
+          if (text.includes('min') && !text.includes('hr')) {
+            timeMinutes = parseFloat(parts[0].replace(' min', ''));
+          } else if (text.includes('hr')) {
+            //TODO: convert hr min to minutes when you find example
+            const splitEstimateTime = parts[0].split('hr');
+            const estimateHours = parseFloat(splitEstimateTime[0]);
+            const estimateMins = parseFloat(splitEstimateTime[1].replace('min', ''));
+            timeMinutes = (estimateHours * 60 + estimateMins); // Convert feet to miles and fix to 2 decimal places
+          }
         }
+
+        console.log("🦊", distanceMiles, timeMinutes);
+
+
+        if (boltJsonData[i - 1].text.includes('★')) {
+          extract.pickupDistance = distanceMiles;
+          extract.pickupTimeEstimate = timeMinutes;
+          // pickup
+        } else if (boltJsonData[i + 2].text.includes('Accept')) {
+          // trip details
+          extract.driverAppDistance = distanceMiles;
+          extract.appTripTimeEstimate = timeMinutes;
+        }
+
+      }
+
+      // Check multiple stops
+
+      if (text.match(/\d+ stop/)) {
+        extract.multipleStops = true;
       }
 
       // Check for the pickup time estimate (e.g., "1 min")
@@ -88,11 +108,9 @@ export function extractBoltData(boltJsonData: { [key: string]: string }[]): Extr
       }
 
       // Check for the passenger rating (e.g., "5.0")
-      if (parseFloat(text) >= 0 && parseFloat(text) <= 5 && text.includes('.') && boltJsonData[i + 1].text.includes('trip')) {
-        extract.passengerRating = parseFloat(text);
+      if (text.includes('★')) {
+        extract.passengerRating = parseFloat(text.match(/(\d\.\d)/)![1]);
       }
-
-
     }
 
     extract.destinationInfoString = getOutcodeDataString(extract.origin as string, extract.destination as string);

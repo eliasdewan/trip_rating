@@ -80,32 +80,37 @@ app.get('/modern', async c => { })
 function clientTemplateString(currentUrl: URL, searchDate: string, limit: number, htmlList: string) {
 
   return `<!doctype html>
-  <head>
-  <title>Trip Log</title>
-  <style>
-    html * {
-      font-size: 16px;
-      line-height: 1.625;
-      color: #2020131;
-      font-family: system-ui, sans-serif;
-    }
-  </style>
-</head>
-<body>
-<h1>TripLog</h1>
-<form action=${currentUrl} method="GET">
-<fieldset>
-<label for="dateInput">Search date:</label>
-<input type="date" name="date" value="${searchDate}">
-<button type="reset" >🔄️</button>
-<label for="dateInput">Limit:</label>
-<input type="number" name="limit" value="${limit}" max="50" min="1">
-<button type="submit" style="width: 50%; height: 100px;">🦉</button>
-</fieldset>
-</form>
-<p> You're searching ${searchDate}</p>
-<div>${htmlList}</div>
-</body>`;
+  ` +
+    <><head>
+      <title>Trip Log</title>
+      <style>
+        {`html * {
+          font - size: 16px;
+        line-height: 1.625;
+        color: #2020131;
+        font-family: system-ui, sans-serif;
+    }`}
+      </style>
+    </head>
+
+
+      <body>
+        <h1>TripLog</h1>
+        <form action={currentUrl} method="GET">
+          <fieldset>
+            <label for="dateInput">Search date:</label>
+            <input type="date" name="date" value={searchDate} />
+            <button type="reset" >🔄️</button>
+            <label for="dateInput">Limit:</label>
+            <input type="number" name="limit" value={limit} max="50" min="1" />
+            <button type="submit" style="width: 50%; height: 100px;">🦉</button>
+          </fieldset>
+        </form>
+
+        <p> You're searching {searchDate}</p>
+        <div dangerouslySetInnerHTML={{ __html: htmlList }} />
+
+      </body></>;
 }
 
 
@@ -135,15 +140,17 @@ function addObject(object: { [key: string]: any }) {
 
     // 8. If the value is not an object just add the key and value
     if (key == "origin" || key == "destination") {
-      htmlList += (`<div><b>${key.toUpperCase()}:</b><a href="https://www.google.com/maps/search/?api=1&query=${object[key]}">${object[key]}</a></div>`)
+
+      htmlList += <div><b>{key.toUpperCase()}:</b><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(object[key])}`} target="_blank" rel="noopener noreferrer">{object[key]}</a></div>;
+
       //add google maps link navigation url with origin and destination key as they have the address
       if (key == "destination") {
-        htmlList += (`<div><a href="https://www.google.com/maps/dir/?api=1&origin=${object["origin"]}&destination=${object[key]}">🗺️ Navigate</a></div>`)
-        htmlList += (`<div><a href="https://www.google.com/maps/dir/Current+Location/${object["origin"]}/${object[key]}">🧭 Navigate with current Location</a></div>`)
+        htmlList += <div><a href={`https://maps.google.com/maps?saddr=${encodeURIComponent(object["origin"])}&daddr=${encodeURIComponent(object[key])}`} target="_blank" rel="noopener noreferrer">🗺️ Navigate</a></div>
+        htmlList += <div><a href={`https://www.google.com/maps/dir/Current+Location/${encodeURIComponent(object["origin"])}/${encodeURIComponent(object[key])}`} target="_blank" rel="noopener noreferrer">🧭 Navigate with current Location</a></div>
       }
       continue
     }
-    htmlList += (`<div><b>${key.toUpperCase()}:</b>${object[key]}</div>`)
+    htmlList += (<div><b>{key.toUpperCase()}:</b>{object[key]}</div>)
   }
 }
 

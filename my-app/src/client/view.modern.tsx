@@ -50,20 +50,20 @@ export function modernHtml(requestData: Array<{ entry: string, data: string }>, 
             <span style="font-weight:500;">£/hr:</span> {pricePerHour?.toFixed(2) ?? '-'}
           </div>
           <div style="font-size:0.95em; color:#666;">
-            <span style="font-weight:500;">From:</span> <a href="https://www.google.com/maps/search/?api=1&query={googleApiParameters?.origin ?? '-'}">{googleApiParameters?.origin ?? '-'}</a>
+            <span style="font-weight:500;">From:</span> <a href={`https://www.google.com/maps/search/?api=1&query=${googleApiParameters?.origin ?? '-'}`}>{googleApiParameters?.origin ?? '-'}</a>
           </div>
           <div style="font-size:0.95em; color:#666;">
-            <span style="font-weight:500;">To:</span> <a href="https://www.google.com/maps/search/?api=1&query={googleApiParameters?.destination ?? '-'}">{googleApiParameters?.destination ?? '-'}</a>
+            <span style="font-weight:500;">To:</span> <a href={`https://www.google.com/maps/search/?api=1&query=${googleApiParameters?.destination ?? '-'}`}>{googleApiParameters?.destination ?? '-'}</a>
           </div>
           <div style="font-size:0.95em; color:#666;">
-            <span style="font-weight:500;"></span> <div><a href="https://www.google.com/maps/dir/?api=1&origin={googleApiParameters?.origin ?? '-'}&destination={googleApiParameters?.destination ?? '-'}">Navigate</a>
+            <span style="font-weight:500;"></span> <div><a href={`https://www.google.com/maps/dir/?api=1&origin=${googleApiParameters?.origin ?? '-'}&destination=${googleApiParameters?.destination ?? '-'}`}>Navigate</a>
               <div style="font-size:0.95em; color:#666;">
                 <span style="font-weight:500;">Dest Info:</span> {destinationInfoString ?? '-'}
               </div>
               <div style="font-size:0.95em; color:#666;">
                 <span style="font-weight:500;">Time:</span> {timeSummary ?? '-'}
               </div>
-              <button onclick="document.getElementById('{expandedId}').style.display = (document.getElementById('{expandedId}').style.display === 'none' ? 'block' : 'none')" style="margin-top:8px; padding:8px 12px; border:none; background:#007aff; color:#fff; border-radius:6px; font-size:1em;">
+              <button onclick={`document.getElementById('${expandedId}').style.display = (document.getElementById('${expandedId}').style.display === 'none' ? 'block' : 'none')`} style="margin-top:8px; padding:8px 12px; border:none; background:#007aff; color:#fff; border-radius:6px; font-size:1em;">
                 Show Details
               </button>
               <div id={expandedId} style="display:none; margin-top:10px; background:#f5f7fa; border-radius:8px; padding:10px; font-size:0.95em; word-break:break-all;">

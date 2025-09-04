@@ -12,7 +12,7 @@ export default [
     { "text": "Decline" }]
 
 
-var sample2 = [
+const sample2 = [
     { "text": "Awaiting rider reply" },
     { "text": "Bolt" },
     { "text": "£5.23 (Net, tax included • £4.98 + est. £0.25 holiday pay supplement)" },
@@ -21,5 +21,49 @@ var sample2 = [
     { "text": "N4  1UJ, Harringay Green Lanes, London" },
     { "text": "7 min • 1.2 mi" },
     { "text": "N4, 7 Nichols Close, Osborne Road, London, UK" },
-    { "text": "Accept" }, 
+    { "text": "Accept" },
     { "text": "Decline" }]
+
+// Sample with multiple stops and demand pricing TODO: Not to factor? sue the in app time
+const sampleMultipleStops = [
+    { "text": "Awaiting rider reply" },
+    { "text": "Bolt" },
+    { "text": "1.1x High demand" },
+    { "text": "£18.89 (Net, tax included • £17.36 + est. £1.53 holiday pay supplement)" },
+    { "text": "C • 4.4 ★ (100)" },
+    { "text": "10 min • 1.3 mi" },
+    { "text": "Elm View Court, Norwood Green Road, Southall UB2 4LA" },
+    { "text": "2 stops" },
+    { "text": "55 min • 9.4 mi" },
+    { "text": "UB2, Elm View Court, Norwood Green Road, Southall UB2 4LA" },
+    { "text": "Accept" },
+    { "text": "Decline" }
+]
+
+const onTripRequest = [
+    { "text": "Awaiting rider reply" },
+    { "text": "Bolt" },
+    { "text": "1.4x High demand" },
+    { "text": "£18.24 (Net, tax included • £16.70 + est. £1.54 holiday pay supplement)" },
+    { "text": "Damilare • 4.6 ★ (120)" },
+    { "text": "Current dropoff" },
+    { "text": "7 min • 1.8 mi" },
+    { "text": "69 Deptford High Street, London" },
+    { "text": "28 min • 7.6 mi" },
+    { "text": "SE25, 159b Portland Road, London SE25 4UY" },
+    { "text": "Accept next ride" },
+    { "text": "Decline" }
+]
+
+const overHourTrip = [
+    { "text": "Awaiting rider reply" },
+    { "text": "Bolt" },
+    { "text": "£22.17 (Net, tax included • £20.51 + est. £1.66 holiday pay supplement)" },
+    { "text": "Neetu • 4.9 ★ (84)" },
+    { "text": "8 min • 1.5 mi" },
+    { "text": "188 Wentworth Road, Hounslow UB2 5TX" },
+    { "text": "67 min • 14.2 mi" },
+    { "text": "NW2, 111 Marley Walk, 111 Marley Walk, London NW2 4PY" },
+    { "text": "Accept" },
+    { "text": "Decline" }
+]

@@ -17,6 +17,9 @@ export interface ExtractBolt {
 
 export function extractBoltData(boltJsonData: { [key: string]: string }[]): ExtractBolt | any {
   const extract: Partial<ExtractBolt> = { multipleStops: false };
+  // Remove any "Current dropoff" entries which can interfere with parsing
+  boltJsonData = boltJsonData.filter(text => text.text !== "Current dropoff");
+
   try {
     for (let i = 0; i < boltJsonData.length; i++) {
       // console.log(extract);
@@ -52,36 +55,36 @@ export function extractBoltData(boltJsonData: { [key: string]: string }[]): Extr
 
       // (?:\b(\d+)\s+hr\s+)?(\d+)\s+min.*?\b(\d+(?:\.\d+))\s+mi
 
-
+      // Either in the pickup or trip details line for time and distance
       if (text.includes('min') && text.includes('•')) {
         let timeMinutes, distanceMiles;
         console.log("🐱", "min and mi", text);
 
-        if (text.length > 8) {
 
-          const parts = text.split(' • ');
 
-          if (text.includes('mi')) {
-            distanceMiles = parseFloat(parts[1].replace(' mi', ''));
-          } else if (text.includes('ft')) {
-            const feet = parseFloat(parts[1].replace(' ft', ''));
-            distanceMiles = (feet / 5280); // Convert feet to miles and fix to 2 decimal places
-          }
+        const parts = text.split(' • ');
 
-          if (text.includes('min') && !text.includes('hr')) {
-            timeMinutes = parseFloat(parts[0].replace(' min', ''));
-          } else if (text.includes('hr')) {
-            //TODO: convert hr min to minutes when you find example
-            const splitEstimateTime = parts[0].split('hr');
-            const estimateHours = parseFloat(splitEstimateTime[0]);
-            const estimateMins = parseFloat(splitEstimateTime[1].replace('min', ''));
-            timeMinutes = (estimateHours * 60 + estimateMins); // Convert feet to miles and fix to 2 decimal places
-          }
+        if (text.includes('mi')) {
+          distanceMiles = parseFloat(parts[1].replace(' mi', ''));
+        } else if (text.includes('ft')) {
+          const feet = parseFloat(parts[1].replace(' ft', ''));
+          distanceMiles = (feet / 5280); // Convert feet to miles and fix to 2 decimal places
         }
+
+        if (text.includes('min') && !text.includes('hr')) {
+          timeMinutes = parseFloat(parts[0].replace(' min', ''));
+        } else if (text.includes('hr')) {
+          //TODO: hr is not used mintues go over 60 on app
+          const splitEstimateTime = parts[0].split('hr');
+          const estimateHours = parseFloat(splitEstimateTime[0]);
+          const estimateMins = parseFloat(splitEstimateTime[1].replace('min', ''));
+          timeMinutes = (estimateHours * 60 + estimateMins); // Convert feet to miles and fix to 2 decimal places
+        }
+
 
         console.log("🦊", distanceMiles, timeMinutes);
 
-
+        // FIXME: previous one can be "Current dropoff"
         if (boltJsonData[i - 1].text.includes('★')) {
           extract.pickupDistance = distanceMiles;
           extract.pickupTimeEstimate = timeMinutes;

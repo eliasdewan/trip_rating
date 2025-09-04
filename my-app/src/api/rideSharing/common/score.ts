@@ -140,13 +140,8 @@ export function calculateScore(
     calculatedData.distanceDifference = parseFloat(calculatedData.distanceDifference.toFixed(2));;
 
     // When guess route is calculated, there is no distance difference, and when bolt didn't provide distance 
-    if (calculatedData.distanceDifference === 0 || pay === driverAppDistance) {
-      console.log("factoring to zero");
-      // set factor to 0
-      calculatedData.distanceDifferenceFactor = 0;
-      calculatedData.factoredData = { miles: 0, timeMinutes: 0, pricePerHour: 0, pricePerMile: 0, expectedArrival: new Date(dropOffTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }) }; // TODO: some alternative to the this, use outcode to search location and use that
-      calculatedData.timeSummary =`${calculatedData.time} (${new Date(pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })} pickup) ${calculatedData.factoredData.expectedArrival}`;
-    } else {
+
+    if (multipleStops) {
       // Similarly you want the distance difference factor to be > 1 . Over estimation means reality is the return is more than the effort
       calculatedData.distanceDifferenceFactor = routeMiles / driverAppDistance;
       calculatedData.distanceDifferenceFactor = parseFloat(calculatedData.distanceDifferenceFactor.toFixed(1));
@@ -160,8 +155,33 @@ export function calculateScore(
       //⌚ Factored
       const dropOffTimeFactored = currentTime.getTime() + calculatedData.factoredData.timeMinutes * 60 * 1000;
       calculatedData.factoredData.expectedArrival = new Date(dropOffTimeFactored).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })
-      calculatedData.timeSummary =`${calculatedData.time} (${new Date(pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })} pickup) ${calculatedData.factoredData.expectedArrival}`;
-          };
+      calculatedData.timeSummary = `${calculatedData.time} (${new Date(pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })} pickup) ${calculatedData.factoredData.expectedArrival}`;
+
+    }
+    else if (calculatedData.distanceDifference === 0 || pay === driverAppDistance) {
+      console.log("factoring to zero");
+      // set factor to 0
+      calculatedData.distanceDifferenceFactor = 0;
+      calculatedData.factoredData = {
+        miles: 0,
+        timeMinutes: 0,
+        pricePerHour: 0,
+        pricePerMile: 0,
+        expectedArrival: new Date(dropOffTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })
+      }; // TODO: some alternative to the this, use outcode to search location and use that
+      calculatedData.timeSummary = `${calculatedData.time} (${new Date(pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })} pickup) ${calculatedData.factoredData.expectedArrival}`;
+    } else {
+      calculatedData.distanceDifferenceFactor = 1;
+      calculatedData.factoredData = {
+        miles: calculatedData.miles,
+        timeMinutes: calculatedData.timeMinutes,
+        pricePerHour: calculatedData.pricePerHour,
+        pricePerMile: calculatedData.pricePerMile,
+        expectedArrival: new Date(dropOffTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })
+      }; // TODO: some alternative to the this, use outcode to search location and use that
+      calculatedData.timeSummary = `${calculatedData.time} (${new Date(pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })} pickup) ${calculatedData.factoredData.expectedArrival}`;
+
+    };
 
     return calculatedData as CalculatedDataType;
   }

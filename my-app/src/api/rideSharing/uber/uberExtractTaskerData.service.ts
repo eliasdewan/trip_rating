@@ -90,11 +90,13 @@ export default function uberExtractData(jsonData: any) {
 
   // Find the next occurrence of "mins" or "hr min" and "mi" for trip length, starts after awayIndex
   let tripLengthIndex = textList.findIndex((line, index) =>
-    index > awayIndex && line.match(/(\d+\s*hr\s*)?(\d+)\s*mins\s*\(\d+(\.\d+)?\s*mi\)/)
+    index > awayIndex && line.match(/(\d+\s*hr\s*)?(\d+)\s*mins?\s*\(\d+(\.\d+)?\s*mi\)/)
   );
+  console.log(tripLengthIndex, "😫");
 
-  if (tripLengthIndex !== -1) {
-    let tripMatch = textList[tripLengthIndex].match(/(?:(\d+)\s*hr\s*)?(\d+)\s*mins\s*\((\d+(\.\d+)?)\s*mi\)/);
+  if (tripLengthIndex !== -1 && textList[tripLengthIndex].includes('mi')) {
+    console.log(textList[tripLengthIndex], "😫");
+    let tripMatch = textList[tripLengthIndex].match(/(?:(\d+)\s*hr\s*)?(\d+)\s*mins?\s*\((\d+(\.\d+)?)\s*mi\)/);
 
     if (tripMatch) {
       const hours = tripMatch[1] ? Number(tripMatch[1]) : 0; // Extract hours if present

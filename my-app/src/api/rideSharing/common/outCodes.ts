@@ -44,9 +44,9 @@ export function getOutcodeDataString(origin: string, destination: string) {
 
     // Use measurement to state if going inward or outward 
     if (inOutMiles >= 0) {
-      inOutString = `IN ${Math.abs(inOutMiles)}`
+      inOutString = `🟢IN ${Math.abs(inOutMiles)}`
     } else {
-      inOutString = `OUT ${Math.abs(inOutMiles)}`
+      inOutString = `🔴OUT ${Math.abs(inOutMiles)}`
     }
   }
 

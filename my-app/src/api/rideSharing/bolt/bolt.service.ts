@@ -42,7 +42,15 @@ export function extractBoltData(boltJsonData: { [key: string]: string }[]): Extr
         }
       }
 
+      // Check for the passenger rating (e.g., "5.0")
+      if (text.includes('★')) {
+        extract.passengerRating = parseFloat(text.match(/(\d\.\d)/)![1]);
+        if (!boltJsonData[i + 1].text.includes('ft') || !boltJsonData[i + 1].text.includes('mi')) {
+          extract.origin = text;
+        }
+      }
 
+      // Pickup distance and time extimate could be not set
       if (i > 4 && boltJsonData[i + 3] && boltJsonData[i - 2]?.text.includes('★')) {
         if (boltJsonData[i - 1].text.includes('ft') || boltJsonData[i - 1].text.includes('mi')) {
           extract.origin = text;
@@ -110,10 +118,6 @@ export function extractBoltData(boltJsonData: { [key: string]: string }[]): Extr
         }
       }
 
-      // Check for the passenger rating (e.g., "5.0")
-      if (text.includes('★')) {
-        extract.passengerRating = parseFloat(text.match(/(\d\.\d)/)![1]);
-      }
     }
 
     extract.destinationInfoString = getOutcodeDataString(extract.origin as string, extract.destination as string);

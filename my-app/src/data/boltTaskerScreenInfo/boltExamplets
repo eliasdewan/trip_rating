@@ -67,3 +67,18 @@ const overHourTrip = [
     { "text": "Accept" },
     { "text": "Decline" }
 ]
+
+// when the pickup info is missing distance and time
+const noPickupInfo = [
+    { "text": "Awaiting rider reply" },
+    { "text": "Bolt" },
+    { "text": "Toll Fee" },
+    { "text": "£13.44 (Net, tax included • £12.44 + est. £1.00 holiday pay supplement)" },
+    { "text": "Catherine • 5.0 ★ (4)" },
+    // No distance and time e .g. "3 min • 0.5 mi"
+    { "text": "3 Billing Place, London SW10 9UR" },
+    { "text": "29 min • 5.3 mi" },
+    { "text": "SE1, Station Entrance/Exit, Waterloo Station" },
+    { "text": "Accept" },
+    { "text": "Decline" }
+]

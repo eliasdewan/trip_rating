@@ -33,8 +33,8 @@ app.get('/sql/:modern?', async c => {
   const modern = c.req.param('modern');
 
   if (modern === 'modern') {
-    const { results: requestData } = await c.env.TRIPLOG.prepare(`SELECT * FROM successlogs WHERE DATE(timestamp) = ? AND ENTRY LIKE '%Request' ORDER BY (id)  DESC limit ?`).bind(searchDate, limit).all();
-    const { results: resultData } = await c.env.TRIPLOG.prepare(`SELECT * FROM successlogs WHERE DATE(timestamp) = ? AND ENTRY LIKE '%SuccessResponse' ORDER BY (id) DESC limit ?`).bind(searchDate, limit).all();
+    const { results: requestData } = await c.env.TRIPLOG.prepare(`SELECT * FROM successlogs WHERE DATE(timestamp) = ? AND ENTRY LIKE '%Request' GROUP BY data ORDER BY (id)  DESC limit ?`).bind(searchDate, limit).all();
+    const { results: resultData } = await c.env.TRIPLOG.prepare(`SELECT * FROM successlogs WHERE DATE(timestamp) = ? AND ENTRY LIKE '%SuccessResponse' GROUP BY data ORDER BY (id) DESC limit ?`).bind(searchDate, limit).all();
     htmlList = modernHtml(requestData as Array<{ entry: string, data: string }>, resultData as Array<{ entry: string, data: string }>);
 
   }
@@ -85,7 +85,7 @@ function clientTemplateString(currentUrl: URL, searchDate: string, limit: number
       <title>Trip Log</title>
       <style>
         {`html * {
-          font - size: 16px;
+          font-size: 2vh ;
         line-height: 1.625;
         color: #2020131;
         font-family: system-ui, sans-serif;
@@ -103,7 +103,7 @@ function clientTemplateString(currentUrl: URL, searchDate: string, limit: number
             <button type="reset" >🔄️</button>
             <label for="dateInput">Limit:</label>
             <input type="number" name="limit" value={limit} max="50" min="1" />
-            <button type="submit" style="width: 50%; height: 100px;">🦉</button>
+            <button type="submit" style="width: 50%; height: 10vh;">🦉</button>
           </fieldset>
         </form>
 

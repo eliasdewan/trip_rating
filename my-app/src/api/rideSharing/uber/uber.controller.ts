@@ -101,8 +101,10 @@ app.post('/uberScore', async (c) => {
         destination = destinationArea;
       }
     } else {
-      destination = fixSearchAddress(destination);
+      // destination = fixSearchAddress(destination);
+      //TODO: turned off for now
     }
+
 
     let googleJsonData;
     // If includes test, use mock data.
@@ -126,7 +128,7 @@ app.post('/uberScore', async (c) => {
     // console.log(ratingResult);
 
     const scoreParameters = {
-      googleJsonData, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate,multipleStops, uberTripMinutes, uberTripDurationArrayHourMinutes 
+      googleJsonData, passengerRating, pay, driverAppDistance, pickupDistance, pickupTimeEstimate, multipleStops, uberTripMinutes, uberTripDurationArrayHourMinutes
     }
 
     const googleApiParameters = { origin, destination, key: "secretKey" }

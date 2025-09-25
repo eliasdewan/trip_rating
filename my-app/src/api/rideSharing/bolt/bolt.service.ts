@@ -33,7 +33,7 @@ export function extractBoltData(boltJsonData: { [key: string]: string }[]): Extr
       // }
 
       // Check for the pay string (e.g., "£5.59 · Net")
-      if (text.includes('£') && text.includes('Net,')) {
+      if (text.includes('£') && text.includes('holiday')) {
         extract.pay = Number(text.split(' ')[0].replace('£', ''));
         if (extract.driverAppDistance === 0.404) {
           extract.driverAppDistance = extract.pay;
